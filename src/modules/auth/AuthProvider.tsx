@@ -6,6 +6,8 @@ import { AuthContext } from "./AuthContext";
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
+    const role = session?.user?.user_metadata?.role ?? null;
+    const isAdmin = role === "admin";
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
@@ -24,5 +26,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await supabase.auth.signOut();
     }
 
-    return <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, signOut }}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, signOut, role, isAdmin }}>{children}</AuthContext.Provider>;
 }

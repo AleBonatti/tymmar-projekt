@@ -1,48 +1,24 @@
-import { Link, NavLink, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
+import { Header } from "@/components/Header";
+
 import { Home } from "@/routes/Home";
 import { Login } from "@/routes/Login";
 import { Dashboard } from "@/routes/Dashboard";
 import { Protected } from "@/routes/Protected";
 import { ResetPassword } from "@/routes/ResetPassword";
-import { AccountList } from "./routes/account/AccountList";
-import { AccountFormNew } from "./routes/account/AccountFormNew";
-import { AccountFormEdit } from "./routes/account/AccountFormEdit";
-import { AdminOnly } from "./routes/account/AdminOnly";
+
+import { AccountList } from "@/routes/account/AccountList";
+import { AccountFormNew } from "@/routes/account/AccountFormNew";
+import { AccountFormEdit } from "@/routes/account/AccountFormEdit";
+
+import { ProjectsList } from "@/routes/projects/ProjectsList";
+import { ProjectFormNew } from "@/routes/projects/ProjectFormNew";
+import { ProjectFormEdit } from "@/routes/projects/ProjectFormEdit";
 
 export function App() {
     return (
         <div className="min-h-dvh flex flex-col">
-            <header className="border-b bg-white">
-                <nav className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-4">
-                    <Link
-                        to="/"
-                        className="font-semibold">
-                        tymmar-projekt
-                    </Link>
-                    <div className="ml-auto flex items-center gap-3">
-                        <NavLink
-                            to="/"
-                            className={({ isActive }) => (isActive ? "underline" : "")}>
-                            Home
-                        </NavLink>
-                        <NavLink
-                            to="/dashboard"
-                            className={({ isActive }) => (isActive ? "underline" : "")}>
-                            Dashboard
-                        </NavLink>
-                        <NavLink
-                            to="/account"
-                            className={({ isActive }) => (isActive ? "underline" : "")}>
-                            Gestione Account
-                        </NavLink>
-                        <NavLink
-                            to="/login"
-                            className={({ isActive }) => (isActive ? "underline" : "")}>
-                            Login
-                        </NavLink>
-                    </div>
-                </nav>
-            </header>
+            <Header />
 
             <main className="flex-1 mx-auto max-w-7xl w-full p-4">
                 <Routes>
@@ -70,9 +46,7 @@ export function App() {
                         path="/account"
                         element={
                             <Protected>
-                                <AdminOnly>
-                                    <AccountList />
-                                </AdminOnly>
+                                <AccountList />
                             </Protected>
                         }
                     />
@@ -80,9 +54,7 @@ export function App() {
                         path="/account/new"
                         element={
                             <Protected>
-                                <AdminOnly>
-                                    <AccountFormNew />
-                                </AdminOnly>
+                                <AccountFormNew />
                             </Protected>
                         }
                     />
@@ -90,9 +62,31 @@ export function App() {
                         path="/account/:id/edit"
                         element={
                             <Protected>
-                                <AdminOnly>
-                                    <AccountFormEdit />
-                                </AdminOnly>
+                                <AccountFormEdit />
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/projects"
+                        element={
+                            <Protected>
+                                <ProjectsList />
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/projects/new"
+                        element={
+                            <Protected>
+                                <ProjectFormNew />
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/projects/:id/edit"
+                        element={
+                            <Protected>
+                                <ProjectFormEdit />
                             </Protected>
                         }
                     />
