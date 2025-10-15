@@ -6,6 +6,10 @@ import { Login } from "@/routes/Login";
 import { Dashboard } from "@/routes/Dashboard";
 import { Protected } from "@/routes/Protected";
 import { ResetPassword } from "@/routes/ResetPassword";
+import { AccountList } from "./routes/account/AccountList";
+import { AccountFormNew } from "./routes/account/AccountFormNew";
+import { AccountFormEdit } from "./routes/account/AccountFormEdit";
+import { AdminOnly } from "./routes/account/AdminOnly";
 
 import { AccountList } from "@/routes/account/AccountList";
 import { AccountFormNew } from "@/routes/account/AccountFormNew";
