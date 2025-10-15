@@ -3,6 +3,7 @@ import { Home } from "@/routes/Home";
 import { Login } from "@/routes/Login";
 import { Dashboard } from "@/routes/Dashboard";
 import { Protected } from "@/routes/Protected";
+import { ResetPassword } from "@/routes/ResetPassword";
 
 export function App() {
     return (
@@ -43,6 +44,10 @@ export function App() {
                     <Route
                         path="/login"
                         element={<Login />}
+                    />
+                    <Route
+                        path="/reset-password"
+                        element={<ResetPassword />}
                     />
                     <Route
                         path="/dashboard"

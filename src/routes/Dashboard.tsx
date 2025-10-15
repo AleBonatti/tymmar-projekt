@@ -1,4 +1,4 @@
-import { useAuth } from "@/modules/auth/AuthProvider";
+import { useAuth } from "@/modules/auth/AuthContext";
 
 export function Dashboard() {
     const { user, signOut } = useAuth();

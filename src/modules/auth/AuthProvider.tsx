@@ -1,20 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/modules/supabase/client";
-
-type AuthContextType = {
-    user: User | null;
-    session: Session | null;
-    loading: boolean;
-    signOut: () => Promise<void>;
-};
-
-const AuthContext = createContext<AuthContextType>({
-    user: null,
-    session: null,
-    loading: true,
-    signOut: async () => {},
-});
+import { AuthContext } from "./AuthContext";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<Session | null>(null);
@@ -27,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, newSession) => {
+        } = supabase.auth.onAuthStateChange((_evt, newSession) => {
             setSession(newSession);
         });
         return () => subscription.unsubscribe();
@@ -39,5 +26,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return <AuthContext.Provider value={{ user: session?.user ?? null, session, loading, signOut }}>{children}</AuthContext.Provider>;
 }
-
-export const useAuth = () => useContext(AuthContext);
