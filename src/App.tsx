@@ -4,6 +4,10 @@ import { Login } from "@/routes/Login";
 import { Dashboard } from "@/routes/Dashboard";
 import { Protected } from "@/routes/Protected";
 import { ResetPassword } from "@/routes/ResetPassword";
+import { AccountList } from "./routes/account/AccountList";
+import { AccountFormNew } from "./routes/account/AccountFormNew";
+import { AccountFormEdit } from "./routes/account/AccountFormEdit";
+import { AdminOnly } from "./routes/account/AdminOnly";
 
 export function App() {
     return (
@@ -25,6 +29,11 @@ export function App() {
                             to="/dashboard"
                             className={({ isActive }) => (isActive ? "underline" : "")}>
                             Dashboard
+                        </NavLink>
+                        <NavLink
+                            to="/account"
+                            className={({ isActive }) => (isActive ? "underline" : "")}>
+                            Gestione Account
                         </NavLink>
                         <NavLink
                             to="/login"
@@ -54,6 +63,36 @@ export function App() {
                         element={
                             <Protected>
                                 <Dashboard />
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/account"
+                        element={
+                            <Protected>
+                                <AdminOnly>
+                                    <AccountList />
+                                </AdminOnly>
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/account/new"
+                        element={
+                            <Protected>
+                                <AdminOnly>
+                                    <AccountFormNew />
+                                </AdminOnly>
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/account/:id/edit"
+                        element={
+                            <Protected>
+                                <AdminOnly>
+                                    <AccountFormEdit />
+                                </AdminOnly>
                             </Protected>
                         }
                     />
