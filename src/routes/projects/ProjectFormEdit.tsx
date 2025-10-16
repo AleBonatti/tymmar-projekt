@@ -14,6 +14,10 @@ export function ProjectFormEdit() {
     const [pending, setPending] = useState<boolean>(false);
     const [err, setErr] = useState<string | null>(null);
 
+    // Stato per eliminazione
+    const [deleting, setDeleting] = useState<boolean>(false);
+    const [deleteErr, setDeleteErr] = useState<string | null>(null);
+
     // Membri
     const [members, setMembers] = useState<ProjectMember[]>([]);
     const [userQuery, setUserQuery] = useState<string>("");
@@ -76,16 +80,17 @@ export function ProjectFormEdit() {
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
+        if (!project) return;
         setPending(true);
         setErr(null);
         try {
             const patch: UpdateProjectPatch = {
-                title: project?.title,
-                description: project?.description,
-                start_date: project?.start_date,
-                end_date: project?.end_date,
-                progress: project?.progress,
-                status: project?.status,
+                title: project.title,
+                description: project.description,
+                start_date: project.start_date,
+                end_date: project.end_date,
+                progress: project.progress,
+                status: project.status,
             };
             await updateProject(project.id, patch);
             nav("/projects");
@@ -110,6 +115,24 @@ export function ProjectFormEdit() {
         }
     }
 
+    // 🗑️ Eliminazione progetto (con conferma)
+    async function handleDeleteProject() {
+        if (!project) return;
+        const confirmed = window.confirm(`Eliminare definitivamente il progetto "${project.title}"?`);
+        if (!confirmed) return;
+
+        setDeleting(true);
+        setDeleteErr(null);
+        try {
+            await deleteProject(project.id);
+            nav("/projects");
+        } catch (e) {
+            const message = (e as { message?: string })?.message ?? "Errore eliminazione progetto";
+            setDeleteErr(message);
+            setDeleting(false);
+        }
+    }
+
     async function handleRemoveMember(userId: string) {
         if (!project) return;
         try {
@@ -123,7 +146,21 @@ export function ProjectFormEdit() {
 
     return (
         <div className="max-w-3xl space-y-8">
-            <h1 className="text-2xl font-semibold">Modifica progetto</h1>
+            <div className="flex items-start justify-between">
+                <h1 className="text-2xl font-semibold">Modifica progetto</h1>
+
+                {/* Pulsante Elimina (danger) */}
+                <div className="flex flex-col items-end gap-2">
+                    {deleteErr && <p className="text-red-600 text-sm">{deleteErr}</p>}
+                    <button
+                        type="button"
+                        onClick={handleDeleteProject}
+                        disabled={deleting}
+                        className="rounded px-3 py-2 ring-1 text-red-700 ring-red-300 hover:bg-red-50 disabled:opacity-50">
+                        {deleting ? "Eliminazione…" : "Elimina progetto"}
+                    </button>
+                </div>
+            </div>
 
             {/* --- FORM PROGETTO --- */}
             <form

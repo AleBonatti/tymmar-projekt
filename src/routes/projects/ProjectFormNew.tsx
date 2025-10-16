@@ -1,11 +1,33 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createProject } from "@/modules/projects/api";
-import type { CreateProjectInput, ProjectStatus } from "@/modules/projects/types";
+//import { createProject } from "@/modules/projects/api";
+import { apiCreateProject } from "@/modules/projects/api.vercel";
+//import type { CreateProjectInput, ProjectStatus } from "@/modules/projects/types";
+import type { ProjectStatus } from "@/modules/projects/types";
+
+// Tipo del form allineato al DTO dell'API
+type CreateProjectPayload = {
+    title: string;
+    description: string | null;
+    start_date: string | null; // formato YYYY-MM-DD oppure null
+    end_date: string | null; // formato YYYY-MM-DD oppure null
+    progress: number; // 0..100
+    status: ProjectStatus; // "planned" | "active" | "paused" | "done" | "cancelled"
+};
 
 export function ProjectFormNew() {
     const nav = useNavigate();
-    const [form, setForm] = useState<CreateProjectInput>({
+
+    /* const [form, setForm] = useState<CreateProjectInput>({
+        title: "",
+        description: "",
+        start_date: null,
+        end_date: null,
+        progress: 0,
+        status: "planned",
+    }); */
+
+    const [form, setForm] = useState<CreateProjectPayload>({
         title: "",
         description: "",
         start_date: null,
@@ -13,10 +35,15 @@ export function ProjectFormNew() {
         progress: 0,
         status: "planned",
     });
+
     const [pending, setPending] = useState<boolean>(false);
     const [err, setErr] = useState<string | null>(null);
 
-    function onChange<K extends keyof CreateProjectInput>(key: K, value: CreateProjectInput[K]) {
+    /* function onChange<K extends keyof CreateProjectInput>(key: K, value: CreateProjectInput[K]) {
+        setForm((prev) => ({ ...prev, [key]: value }));
+    } */
+
+    function onChange<K extends keyof CreateProjectPayload>(key: K, value: CreateProjectPayload[K]) {
         setForm((prev) => ({ ...prev, [key]: value }));
     }
 
@@ -25,7 +52,8 @@ export function ProjectFormNew() {
         setPending(true);
         setErr(null);
         try {
-            await createProject(form);
+            //await createProject(form);
+            await apiCreateProject(form);
             nav("/projects");
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore salvataggio";
