@@ -1,6 +1,6 @@
 import type { VercelRequest } from "@vercel/node";
 import type { User } from "@supabase/supabase-js";
-import { getSupabaseAdmin } from "./supabase";
+import { getSupabaseAdmin } from "./supabase.js";
 
 export interface AuthContext {
     token: string;

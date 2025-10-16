@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireAuthAdmin } from "../_lib/auth";
-import { getSupabaseRLS } from "../_lib/supabase";
-import { sendError, parseZodError } from "../_lib/errors";
-import { CreateProjectSchema } from "./schema";
+import { requireAuthAdmin } from "../_lib/auth.js";
+import { getSupabaseRLS } from "../_lib/supabase.js";
+import { sendError, parseZodError } from "../_lib/errors.js";
+import { CreateProjectSchema } from "./schema.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (req.method !== "POST") {
