@@ -39,7 +39,6 @@ export async function apiGetProject(id: string): Promise<Project> {
         // se non hai l'endpoint "get", puoi crearne uno o usare /list filtrando.
         headers: { Authorization: `Bearer ${token}` },
     });
-    console.log(resp);
     if (!resp.ok) return parseError(resp);
     const data = (await resp.json()) as { project: Project };
     return data.project;
