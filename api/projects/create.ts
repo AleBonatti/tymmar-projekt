@@ -5,6 +5,7 @@ import { sendError, parseZodError } from "../_lib/errors.js";
 import { CreateProjectSchema } from "./schema.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+    console.log(0);
     if (req.method !== "POST") {
         res.setHeader("Allow", "POST");
         return sendError(res, 405, "Metodo non consentito");
