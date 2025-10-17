@@ -1,26 +1,27 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { z } from "zod";
 import { requireAuthAdmin } from "../../_lib/auth.js";
-import { getSupabaseRLS } from "../../_lib/supabase.js";
+import { getSupabaseAdmin } from "../../_lib/supabase.js";
 import { sendError } from "../../_lib/errors.js";
+
+const Params = z.object({ id: z.string().uuid("ID non valido") });
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (req.method !== "DELETE") {
         res.setHeader("Allow", "DELETE");
         return sendError(res, 405, "Metodo non consentito");
     }
-
     try {
-        const { token } = await requireAuthAdmin(req);
-        const id = typeof req.query.id === "string" ? req.query.id : "";
-        if (!id) return sendError(res, 400, "ID progetto mancante");
+        await requireAuthAdmin(req);
+        const params = Params.parse(req.query);
 
-        const supabase = getSupabaseRLS(token);
-        const { error } = await supabase.from("projects").delete().eq("id", id);
+        const admin = getSupabaseAdmin();
+        const { error } = await admin.auth.admin.deleteUser(params.id);
         if (error) return sendError(res, 400, error.message);
 
         res.status(204).end();
     } catch (e) {
-        const message = (e as { message?: string })?.message ?? "Errore server";
-        return sendError(res, 401, message);
+        const msg = (e as { message?: string })?.message ?? "Errore server";
+        sendError(res, 400, msg);
     }
 }

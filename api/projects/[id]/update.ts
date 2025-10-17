@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireAuthAdmin } from "../../_lib/auth.ts";
-import { getSupabaseRLS } from "../../_lib/supabase.ts";
-import { sendError, parseZodError } from "../../_lib/errors.ts";
-import { UpdateProjectSchema } from "../schema.ts";
+import { requireAuthAdmin } from "../../_lib/auth.js";
+import { getSupabaseRLS } from "../../_lib/supabase.js";
+import { sendError, parseZodError } from "../../_lib/errors.js";
+import { UpdateProjectSchema } from "../schema.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (req.method !== "PATCH") {
