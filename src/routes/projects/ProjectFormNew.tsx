@@ -1,8 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-//import { createProject } from "@/modules/projects/api";
 import { apiCreateProject } from "@/modules/projects/api.vercel";
-//import type { CreateProjectInput, ProjectStatus } from "@/modules/projects/types";
 import type { ProjectStatus } from "@/modules/projects/types";
 
 // Tipo del form allineato al DTO dell'API
@@ -18,15 +16,6 @@ type CreateProjectPayload = {
 export function ProjectFormNew() {
     const nav = useNavigate();
 
-    /* const [form, setForm] = useState<CreateProjectInput>({
-        title: "",
-        description: "",
-        start_date: null,
-        end_date: null,
-        progress: 0,
-        status: "planned",
-    }); */
-
     const [form, setForm] = useState<CreateProjectPayload>({
         title: "",
         description: "",
@@ -38,10 +27,6 @@ export function ProjectFormNew() {
 
     const [pending, setPending] = useState<boolean>(false);
     const [err, setErr] = useState<string | null>(null);
-
-    /* function onChange<K extends keyof CreateProjectInput>(key: K, value: CreateProjectInput[K]) {
-        setForm((prev) => ({ ...prev, [key]: value }));
-    } */
 
     function onChange<K extends keyof CreateProjectPayload>(key: K, value: CreateProjectPayload[K]) {
         setForm((prev) => ({ ...prev, [key]: value }));

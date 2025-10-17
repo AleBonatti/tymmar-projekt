@@ -1,7 +1,9 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getProject, updateProject, deleteProject, listProjectMembers, addProjectMember, removeProjectMember } from "@/modules/projects/api";
-import type { Project, UpdateProjectPatch, ProjectMember } from "@/modules/projects/types";
+//import { getProject, updateProject, deleteProject, listProjectMembers, addProjectMember, removeProjectMember } from "@/modules/projects/api";
+
+import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
+import type { Project, ProjectStatus, ProjectMember } from "@/modules/projects/types";
 import { searchEligibleUsers, type EligibleUser } from "@/modules/projects/api.users";
 
 export function ProjectFormEdit() {
@@ -34,8 +36,8 @@ export function ProjectFormEdit() {
                 return;
             }
             try {
-                const p = await getProject(id);
-                const mem = await listProjectMembers(id);
+                const p = await apiGetProject(id);
+                const mem = await apiListMembers(id);
                 if (!mounted) return;
                 setProject(p);
                 setMembers(mem);
@@ -84,15 +86,22 @@ export function ProjectFormEdit() {
         setPending(true);
         setErr(null);
         try {
-            const patch: UpdateProjectPatch = {
+            /* const patch: UpdateProjectPatch = {
                 title: project.title,
                 description: project.description,
                 start_date: project.start_date,
                 end_date: project.end_date,
                 progress: project.progress,
                 status: project.status,
-            };
-            await updateProject(project.id, patch);
+            }; */
+            await apiUpdateProject(project.id, {
+                title: project.title,
+                description: project.description,
+                start_date: project.start_date,
+                end_date: project.end_date,
+                progress: project.progress,
+                status: project.status as ProjectStatus,
+            });
             nav("/projects");
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore salvataggio";
@@ -105,7 +114,7 @@ export function ProjectFormEdit() {
     async function handleAddMember(userId: string) {
         if (!project) return;
         try {
-            const m = await addProjectMember(project.id, userId);
+            const m = await apiAddMember(project.id, userId);
             setMembers((prev) => [m, ...prev]);
             setUserQuery("");
             setUserOptions([]);
@@ -124,7 +133,7 @@ export function ProjectFormEdit() {
         setDeleting(true);
         setDeleteErr(null);
         try {
-            await deleteProject(project.id);
+            await apiDeleteProject(project.id);
             nav("/projects");
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore eliminazione progetto";
@@ -136,7 +145,7 @@ export function ProjectFormEdit() {
     async function handleRemoveMember(userId: string) {
         if (!project) return;
         try {
-            await removeProjectMember(project.id, userId);
+            await apiRemoveMember(project.id, userId);
             setMembers((prev) => prev.filter((m) => m.user_id !== userId));
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore rimozione membro";

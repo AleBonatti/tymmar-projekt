@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireAuthAdmin } from "../_lib/auth.ts";
-import { getSupabaseRLS } from "../_lib/supabase.ts";
-import { sendError } from "../_lib/errors.ts";
+import { requireAuthAdmin } from "../_lib/auth.js";
+import { getSupabaseRLS } from "../_lib/supabase.js";
+import { sendError } from "../_lib/errors.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (req.method !== "GET") {

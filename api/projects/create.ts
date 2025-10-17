@@ -5,14 +5,12 @@ import { sendError, parseZodError } from "../_lib/errors.js";
 import { CreateProjectSchema } from "./schema.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-    console.log(0);
     if (req.method !== "POST") {
         res.setHeader("Allow", "POST");
         return sendError(res, 405, "Metodo non consentito");
     }
 
     try {
-        console.log(1);
         const { token, user } = await requireAuthAdmin(req);
         const input = CreateProjectSchema.parse(req.body);
         if (input.start_date && input.end_date && input.start_date > input.end_date) {
@@ -31,9 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             created_by: user.id,
         };
 
-        console.log(2);
         const { data, error } = await supabase.from("projects").insert(payload).select().single();
-        console.log(error);
         if (error) return sendError(res, 400, error.message);
 
         res.status(201).json({ project: data });

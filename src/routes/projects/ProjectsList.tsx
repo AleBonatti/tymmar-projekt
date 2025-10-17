@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { listProjects } from "@/modules/projects/api";
+import { apiListProjects } from "@/modules/projects/api.vercel";
 import type { Project } from "@/modules/projects/types";
 
 export function ProjectsList() {
@@ -10,22 +10,25 @@ export function ProjectsList() {
     const [err, setErr] = useState<string | null>(null);
 
     useEffect(() => {
-        let mounted = true;
-        (async () => {
+        let cancelled = false;
+        const t = window.setTimeout(async () => {
             setLoading(true);
             setErr(null);
             try {
-                const data = await listProjects(q);
-                if (mounted) setItems(data);
+                // Tipizza il risultato come Project[]
+                const data = await apiListProjects(q);
+                if (!cancelled) setItems(data);
             } catch (e) {
                 const message = (e as { message?: string })?.message ?? "Errore caricamento";
-                if (mounted) setErr(message);
+                if (!cancelled) setErr(message);
             } finally {
-                if (mounted) setLoading(false);
+                if (!cancelled) setLoading(false);
             }
-        })();
+        }, 250); // piccolo debounce sulla ricerca
+
         return () => {
-            mounted = false;
+            cancelled = true;
+            window.clearTimeout(t);
         };
     }, [q]);
 
