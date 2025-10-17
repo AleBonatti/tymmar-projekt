@@ -15,7 +15,6 @@ export async function apiCreateProject(input: CreateProjectDTO): Promise<void> {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(input),
     });
-    console.log(resp);
     if (!resp.ok) {
         const err = (await resp.json()) as { error?: string };
         throw new Error(err.error ?? "Errore server");
