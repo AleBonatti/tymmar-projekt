@@ -10,6 +10,7 @@ async function getToken(): Promise<string> {
 
 export async function apiCreateProject(input: CreateProjectDTO): Promise<void> {
     const token = await getToken();
+    console.log(token);
     const resp = await fetch("/api/projects/create", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
