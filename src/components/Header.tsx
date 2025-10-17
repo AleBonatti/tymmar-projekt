@@ -64,7 +64,7 @@ export function Header() {
                             <NavLink
                                 to="/projects"
                                 className={link}>
-                                Progetti
+                                Gestione Progetti
                             </NavLink>
                             <button
                                 onClick={signOut}
