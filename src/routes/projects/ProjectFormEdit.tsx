@@ -1,5 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/Button";
+import { TextField } from "@/components/ui/TextField";
 //import { getProject, updateProject, deleteProject, listProjectMembers, addProjectMember, removeProjectMember } from "@/modules/projects/api";
 
 import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
@@ -177,42 +179,50 @@ export function ProjectFormEdit() {
                 className="space-y-3">
                 {/* titolo */}
                 <div>
-                    <label className="block text-sm font-medium">Titolo</label>
-                    <input
-                        className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                    <TextField
+                        label="Title"
                         value={project.title}
                         onChange={(e) => setProject({ ...project, title: e.target.value })}
-                        required
                     />
                 </div>
 
                 {/* descrizione */}
                 <div>
-                    <label className="block text-sm font-medium">Descrizione</label>
-                    <textarea
-                        className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                    <TextField
+                        label="Description"
+                        as="textarea"
                         rows={4}
                         value={project.description ?? ""}
-                        onChange={(e) => setProject({ ...project, description: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProject({ ...project, description: e.target.value })}
                     />
                 </div>
 
                 {/* date */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-sm font-medium">Inizio</label>
+                        {/* <label className="block text-sm font-medium">Inizio</label>
                         <input
                             type="date"
                             className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
                             value={project.start_date ?? ""}
                             onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
+                        /> */}
+                        <TextField
+                            label="Date start"
+                            value={project.start_date ?? ""}
+                            onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium">Fine</label>
+                        {/* <label className="block text-sm font-medium">Fine</label>
                         <input
                             type="date"
                             className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                            value={project.end_date ?? ""}
+                            onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
+                        /> */}
+                        <TextField
+                            label="Date end"
                             value={project.end_date ?? ""}
                             onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
                         />
