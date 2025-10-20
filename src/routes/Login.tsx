@@ -18,7 +18,7 @@ export function Login() {
 
     const from = state?.from?.pathname || "/dashboard";
 
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState("info@alessandrobonatti.it");
     const [password, setPassword] = useState("");
     const [pending, setPending] = useState(false);
     const [err, setErr] = useState<string | null>(null);

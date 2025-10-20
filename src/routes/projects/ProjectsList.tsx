@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { apiListProjects } from "@/modules/projects/api.vercel";
 import type { Project } from "@/modules/projects/types";
 import { Button } from "@/components/ui/Button";
-import { TextField } from "@/components/ui/TextField";
+import { InputField } from "@/components/ui/InputField";
 
 export function ProjectsList() {
     const [items, setItems] = useState<Project[]>([]);
@@ -47,8 +47,8 @@ export function ProjectsList() {
                 </Button>
             </div>
 
-            <TextField
-                onChange={(e) => setQ(e.target.value)}
+            <InputField
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)}
                 value={q}
                 fullWidth={false}
                 placeholder="Search projects…"

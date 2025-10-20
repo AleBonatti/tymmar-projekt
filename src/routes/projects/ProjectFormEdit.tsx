@@ -1,7 +1,8 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { TextField } from "@/components/ui/TextField";
+import { InputField } from "@/components/ui/InputField";
+import { TextArea } from "@/components/ui/TextArea";
 //import { getProject, updateProject, deleteProject, listProjectMembers, addProjectMember, removeProjectMember } from "@/modules/projects/api";
 
 import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
@@ -179,7 +180,7 @@ export function ProjectFormEdit() {
                 className="space-y-3">
                 {/* titolo */}
                 <div>
-                    <TextField
+                    <InputField
                         label="Title"
                         value={project.title}
                         onChange={(e) => setProject({ ...project, title: e.target.value })}
@@ -188,7 +189,7 @@ export function ProjectFormEdit() {
 
                 {/* descrizione */}
                 <div>
-                    <TextField
+                    <TextArea
                         label="Description"
                         as="textarea"
                         rows={4}
@@ -207,7 +208,7 @@ export function ProjectFormEdit() {
                             value={project.start_date ?? ""}
                             onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
                         /> */}
-                        <TextField
+                        <InputField
                             label="Date start"
                             value={project.start_date ?? ""}
                             onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
@@ -221,7 +222,7 @@ export function ProjectFormEdit() {
                             value={project.end_date ?? ""}
                             onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
                         /> */}
-                        <TextField
+                        <InputField
                             label="Date end"
                             value={project.end_date ?? ""}
                             onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}

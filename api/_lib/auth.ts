@@ -23,6 +23,7 @@ export async function requireAuthAdmin(req: VercelRequest): Promise<AuthContext>
 
     const role = (data.user.user_metadata as Record<string, unknown>)?.role;
     const isAdmin = role === "admin";
+    alert(role);
     if (!isAdmin) {
         throw new Error("Forbidden: solo amministratori");
     }

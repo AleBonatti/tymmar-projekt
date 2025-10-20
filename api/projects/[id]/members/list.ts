@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         if (!id) return sendError(res, 400, "ID progetto mancante");
 
         const supabase = getSupabaseRLS(token);
-        const { data, error } = await supabase.from("project_members").select("*").eq("project_id", id).order("added_at", { ascending: false });
+        const { data, error } = await supabase.from("employee_projects").select("*").eq("project_id", id).order("added_at", { ascending: false });
 
         if (error) return sendError(res, 400, error.message);
         res.status(200).json({ members: data ?? [] });
