@@ -5,9 +5,11 @@ import { TextAreaField } from "@/components/ui/TextAreaField";
 import { SelectField } from "@/components/ui/SelectField";
 import { Button } from "@/components/ui/Button";
 
-import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
+import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListProjectMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
 import type { Project, ProjectStatus, ProjectMember } from "@/modules/projects/types";
-import { searchEligibleUsers, type EligibleUser } from "@/modules/projects/api.users";
+import type { Member } from "@/modules/members/types";
+//import { searchEligibleUsers, type EligibleUser } from "@/modules/projects/api.users";
+import { apiListMembers } from "@/modules/members/api.vercel";
 
 export function ProjectFormEdit() {
     const nav = useNavigate();
@@ -24,9 +26,9 @@ export function ProjectFormEdit() {
     const [deleteErr, setDeleteErr] = useState<string | null>(null);
 
     // Membri
-    const [members, setMembers] = useState<ProjectMember[]>([]);
+    const [members, setMembers] = useState<Member[]>([]);
     const [userQuery, setUserQuery] = useState<string>("");
-    const [userOptions, setUserOptions] = useState<EligibleUser[]>([]);
+    const [userOptions, setUserOptions] = useState<ProjectMember[]>([]);
     const [searching, setSearching] = useState<boolean>(false);
     const [membersErr, setMembersErr] = useState<string | null>(null);
 
@@ -48,7 +50,7 @@ export function ProjectFormEdit() {
             }
             try {
                 const p = await apiGetProject(id);
-                const mem = await apiListMembers(id);
+                const mem = await apiListProjectMembers(id);
                 if (!mounted) return;
                 setProject(p);
                 setMembers(mem);
@@ -71,7 +73,7 @@ export function ProjectFormEdit() {
             setSearching(true);
             setMembersErr(null);
             try {
-                const opts = await searchEligibleUsers(userQuery.trim());
+                const opts = await apiListMembers(userQuery.trim());
                 if (!cancelled) setUserOptions(opts);
             } catch (e) {
                 const message = (e as { message?: string })?.message ?? "Errore ricerca utenti";
@@ -89,7 +91,7 @@ export function ProjectFormEdit() {
     }, [userQuery]);
 
     if (loading) return <div>Loading…</div>;
-    if (!project) return <div className="text-red-600">{err || "Progetto non trovato"}</div>;
+    if (!project) return <div className="text-red-600">{err || "Project not found"}</div>;
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -272,22 +274,22 @@ export function ProjectFormEdit() {
                                         key={u.id}
                                         className="flex items-center justify-between px-3 py-2">
                                         <div className="text-sm">
-                                            <div className="font-medium">{u.full_name ?? u.username ?? u.email ?? u.id}</div>
-                                            <div className="text-slate-500">{u.email}</div>
+                                            <div className="font-medium">{`${u.name} ${u.surname}`}</div>
+                                            <div className="text-slate-500">#{u.id}</div>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => handleAddMember(u.id)}
                                             className="rounded px-2 py-1 ring-1 text-sm">
-                                            Aggiungi
+                                            Add
                                         </button>
                                     </li>
                                 ))}
                             </ul>
                         ) : userQuery.trim().length > 0 ? (
-                            <div className="text-sm text-slate-500 px-2 py-2">Nessun utente trovato</div>
+                            <div className="text-sm text-slate-500 px-2 py-2">No user found</div>
                         ) : (
-                            <div className="text-sm text-slate-500 px-2 py-2">Digita per cercare…</div>
+                            <div className="text-sm text-slate-500 px-2 py-2">Type to search…</div>
                         )}
                     </div>
                 </div>
@@ -298,29 +300,28 @@ export function ProjectFormEdit() {
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="text-left border-b">
-                            <th className="py-2">Utente</th>
+                            <th className="py-2">User</th>
                             <th>Email</th>
-                            <th>Aggiunto il</th>
+                            <th>Added on</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {members.map((m) => {
-                            const u = userOptions.find((x) => x.id === m.user_id);
+                            const u = userOptions.find((x) => x.id === m.id);
                             return (
                                 <tr
-                                    key={m.user_id}
+                                    key={m.id}
                                     className="border-b">
-                                    <td className="py-2 font-medium">{u?.full_name ?? u?.username ?? u?.email ?? m.user_id}</td>
-                                    <td>{u?.email ?? "—"}</td>
+                                    <td className="py-2 font-medium">{`${u?.name} ${u?.surname}`}</td>
+                                    <td>{u?.id ?? "—"}</td>
                                     <td>{new Date(m.added_at).toLocaleString()}</td>
                                     <td className="text-right">
-                                        <button
+                                        <Button
                                             type="button"
-                                            onClick={() => handleRemoveMember(m.user_id)}
-                                            className="rounded px-2 py-1 ring-1">
-                                            Rimuovi
-                                        </button>
+                                            onClick={() => handleRemoveMember(m.id)}>
+                                            Remove
+                                        </Button>
                                     </td>
                                 </tr>
                             );
@@ -330,7 +331,7 @@ export function ProjectFormEdit() {
                                 <td
                                     className="py-4 text-slate-500"
                                     colSpan={4}>
-                                    Nessun membro associato
+                                    No users on this project
                                 </td>
                             </tr>
                         )}

@@ -82,7 +82,7 @@ export async function apiDeleteProject(id: string): Promise<void> {
     if (!resp.ok) return parseError(resp);
 }
 
-export async function apiListMembers(projectId: string): Promise<ProjectMember[]> {
+export async function apiListProjectMembers(projectId: string): Promise<ProjectMember[]> {
     const token = await getToken();
     const resp = await fetch(`/api/projects/${projectId}/members/list`, {
         headers: { Authorization: `Bearer ${token}` },

@@ -7,24 +7,24 @@ import { MemberActionSchema } from "../../schema.js";
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (req.method !== "POST") {
         res.setHeader("Allow", "POST");
-        return sendError(res, 405, "Metodo non consentito");
+        return sendError(res, 405, "Method not allowed");
     }
 
     try {
         const { token } = await requireAuthAdmin(req);
         const id = typeof req.query.id === "string" ? req.query.id : "";
-        if (!id) return sendError(res, 400, "ID progetto mancante");
+        if (!id) return sendError(res, 400, "Missing project ID");
 
         const body = MemberActionSchema.parse(req.body);
 
         const supabase = getSupabaseRLS(token);
-        const { data, error } = await supabase.from("project_members").insert({ project_id: id, user_id: body.user_id }).select().single();
+        const { data, error } = await supabase.from("employee_project").insert({ project_id: id, user_id: body.user_id }).select().single();
 
         if (error) return sendError(res, 400, error.message);
         res.status(201).json({ member: data });
     } catch (e) {
         const msg = parseZodError(e);
-        const text = msg === "Payload non valido" ? (e as { message?: string })?.message ?? msg : msg;
+        const text = msg === "Invalid payload" ? (e as { message?: string })?.message ?? msg : msg;
         return sendError(res, 400, text);
     }
 }

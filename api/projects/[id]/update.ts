@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         res.status(200).json({ project: data });
     } catch (e) {
         const msg = parseZodError(e);
-        const text = msg === "Payload non valido" ? (e as { message?: string })?.message ?? msg : msg;
+        const text = msg === "Invalid payload" ? (e as { message?: string })?.message ?? msg : msg;
         return sendError(res, 400, text);
     }
 }

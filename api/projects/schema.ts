@@ -32,7 +32,7 @@ export const UpdateProjectSchema = z.object({
 export type UpdateProjectDTO = z.infer<typeof UpdateProjectSchema>;
 
 export const MemberActionSchema = z.object({
-    user_id: z.string().uuid("user_id non valido"),
+    user_id: z.string().uuid("invalid user_id"),
 });
 
 export type MemberActionDTO = z.infer<typeof MemberActionSchema>;
