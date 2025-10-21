@@ -4,7 +4,12 @@ import { z } from "zod";
 
 // Schema di validazione parametri
 const ParamsSchema = z.object({
-    id: z.string().uuid("ID progetto non valido"),
+    //id: z.string().uuid("Invalid project ID"),
+    id: z
+        .string()
+        .regex(/^\d+$/, "Project ID must be a number")
+        .transform((val) => Number(val))
+        .pipe(z.number().int().positive("Invalid project ID")),
 });
 
 // Helper per errori JSON
@@ -16,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     try {
         if (req.method !== "GET") {
             res.setHeader("Allow", "GET");
-            return jsonError(res, 405, "Metodo non consentito");
+            return jsonError(res, 405, "Method not allowed");
         }
 
         const parsed = ParamsSchema.safeParse(req.query);
@@ -26,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         // Autenticazione: estrai token JWT
         const authHeader = req.headers.authorization;
         const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : "";
-        if (!token) return jsonError(res, 401, "Token mancante");
+        if (!token) return jsonError(res, 401, "Missing Token");
 
         // ENV check
         const url = process.env.SUPABASE_URL;
@@ -34,16 +39,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (!url || !anon || !service) {
             console.error("[get] Env mancanti:", { url: !!url, anon: !!anon, service: !!service });
-            return jsonError(res, 500, "Configurazione server incompleta (ENV mancanti)");
+            return jsonError(res, 500, "Incomplete configuration (missing ENV)");
         }
 
         // Verifica utente e ruolo
         const adminClient = createClient(url, service);
         const { data: userData, error: userErr } = await adminClient.auth.getUser(token);
-        if (userErr || !userData?.user) return jsonError(res, 401, "Token non valido o scaduto");
+        if (userErr || !userData?.user) return jsonError(res, 401, "Invalid or expired token");
 
-        const role = (userData.user.user_metadata as Record<string, unknown>)?.role;
-        if (role !== "admin") return jsonError(res, 403, "Accesso negato: solo amministratori");
+        //const role = (userData.user.user_metadata as Record<string, unknown>)?.role;
+        //if (role !== "admin") return jsonError(res, 403, "Access denied: administrators only");
 
         // Query RLS-friendly (autenticato con anon + JWT)
         const supabase = createClient(url, anon, {
@@ -56,11 +61,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             console.error("[get] supabase error", error);
             return jsonError(res, 404, error.message);
         }
-        if (!data) return jsonError(res, 404, "Progetto non trovato");
+        if (!data) return jsonError(res, 404, "Project not found");
 
         res.status(200).json({ project: data });
     } catch (e) {
-        const message = (e as { message?: string })?.message ?? "Errore interno del server";
+        const message = (e as { message?: string })?.message ?? "Internal server error";
         console.error("[get] unhandled error", e);
         jsonError(res, 500, message);
     }

@@ -1,9 +1,9 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "@/components/ui/Button";
 import { InputField } from "@/components/ui/InputField";
-import { TextArea } from "@/components/ui/TextArea";
-//import { getProject, updateProject, deleteProject, listProjectMembers, addProjectMember, removeProjectMember } from "@/modules/projects/api";
+import { TextAreaField } from "@/components/ui/TextAreaField";
+import { SelectField } from "@/components/ui/SelectField";
+import { Button } from "@/components/ui/Button";
 
 import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
 import type { Project, ProjectStatus, ProjectMember } from "@/modules/projects/types";
@@ -29,6 +29,14 @@ export function ProjectFormEdit() {
     const [userOptions, setUserOptions] = useState<EligibleUser[]>([]);
     const [searching, setSearching] = useState<boolean>(false);
     const [membersErr, setMembersErr] = useState<string | null>(null);
+
+    const stateOptions = [
+        { label: "planned", value: "planned" },
+        { label: "active", value: "active" },
+        { label: "paused", value: "paused" },
+        { label: "completed", value: "completed" },
+        { label: "cancelled", value: "cancelled" },
+    ];
 
     useEffect(() => {
         let mounted = true;
@@ -89,14 +97,6 @@ export function ProjectFormEdit() {
         setPending(true);
         setErr(null);
         try {
-            /* const patch: UpdateProjectPatch = {
-                title: project.title,
-                description: project.description,
-                start_date: project.start_date,
-                end_date: project.end_date,
-                progress: project.progress,
-                status: project.status,
-            }; */
             await apiUpdateProject(project.id, {
                 title: project.title,
                 description: project.description,
@@ -151,7 +151,7 @@ export function ProjectFormEdit() {
             await apiRemoveMember(project.id, userId);
             setMembers((prev) => prev.filter((m) => m.user_id !== userId));
         } catch (e) {
-            const message = (e as { message?: string })?.message ?? "Errore rimozione membro";
+            const message = (e as { message?: string })?.message ?? "Error on removing employee";
             setMembersErr(message);
         }
     }
@@ -159,18 +159,18 @@ export function ProjectFormEdit() {
     return (
         <div className="max-w-3xl space-y-8">
             <div className="flex items-start justify-between">
-                <h1 className="text-2xl font-semibold">Modifica progetto</h1>
+                <h1 className="text-2xl font-semibold">Update project</h1>
 
                 {/* Pulsante Elimina (danger) */}
                 <div className="flex flex-col items-end gap-2">
                     {deleteErr && <p className="text-red-600 text-sm">{deleteErr}</p>}
-                    <button
+                    <Button
                         type="button"
+                        variant="danger-outline"
                         onClick={handleDeleteProject}
-                        disabled={deleting}
-                        className="rounded px-3 py-2 ring-1 text-red-700 ring-red-300 hover:bg-red-50 disabled:opacity-50">
-                        {deleting ? "Eliminazione…" : "Elimina progetto"}
-                    </button>
+                        disabled={deleting}>
+                        {deleting ? "Deleting" : "Delete project"}
+                    </Button>
                 </div>
             </div>
 
@@ -178,7 +178,6 @@ export function ProjectFormEdit() {
             <form
                 onSubmit={onSubmit}
                 className="space-y-3">
-                {/* titolo */}
                 <div>
                     <InputField
                         label="Title"
@@ -186,72 +185,47 @@ export function ProjectFormEdit() {
                         onChange={(e) => setProject({ ...project, title: e.target.value })}
                     />
                 </div>
-
-                {/* descrizione */}
                 <div>
-                    <TextArea
+                    <TextAreaField
                         label="Description"
-                        as="textarea"
                         rows={4}
                         value={project.description ?? ""}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProject({ ...project, description: e.target.value })}
                     />
                 </div>
-
-                {/* date */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        {/* <label className="block text-sm font-medium">Inizio</label>
-                        <input
-                            type="date"
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                            value={project.start_date ?? ""}
-                            onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
-                        /> */}
                         <InputField
+                            type="date"
                             label="Date start"
                             value={project.start_date ?? ""}
                             onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
                         />
                     </div>
                     <div>
-                        {/* <label className="block text-sm font-medium">Fine</label>
-                        <input
-                            type="date"
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                            value={project.end_date ?? ""}
-                            onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
-                        /> */}
                         <InputField
+                            type="date"
                             label="Date end"
                             value={project.end_date ?? ""}
                             onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
                         />
                     </div>
                 </div>
-
-                {/* stato + progresso */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-sm font-medium">Stato</label>
-                        <select
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                        <SelectField
+                            label="State"
+                            options={stateOptions}
                             value={project.status}
-                            onChange={(e) => setProject({ ...project, status: e.target.value as Project["status"] })}>
-                            <option value="planned">planned</option>
-                            <option value="active">active</option>
-                            <option value="paused">paused</option>
-                            <option value="done">done</option>
-                            <option value="cancelled">cancelled</option>
-                        </select>
+                            onChange={(e) => setProject({ ...project, status: e.target.value as Project["status"] })}
+                        />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium">Progresso</label>
-                        <input
+                        <InputField
                             type="number"
                             min={0}
                             max={100}
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                            label="Progress"
                             value={project.progress}
                             onChange={(e) => setProject({ ...project, progress: Number(e.target.value) })}
                         />
@@ -260,17 +234,17 @@ export function ProjectFormEdit() {
 
                 {err && <p className="text-red-600 text-sm">{err}</p>}
                 <div className="flex gap-2">
-                    <button
-                        disabled={pending}
-                        className="rounded px-3 py-2 ring-1">
-                        {pending ? "Salvo…" : "Salva"}
-                    </button>
-                    <button
+                    <Button
                         type="button"
                         onClick={() => nav(-1)}
-                        className="rounded px-3 py-2 ring-1">
-                        Annulla
-                    </button>
+                        variant="outline">
+                        Cancel
+                    </Button>
+                    <Button
+                        disabled={pending}
+                        variant="primary">
+                        {pending ? "Saving" : "Save"}
+                    </Button>
                 </div>
             </form>
 

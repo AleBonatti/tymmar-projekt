@@ -2,7 +2,7 @@ import React from "react";
 import { Link, type LinkProps } from "react-router-dom";
 import clsx from "clsx";
 
-type ButtonVariant = "primary" | "secondary" | "outline";
+type ButtonVariant = "primary" | "secondary" | "outline" | "danger" | "danger-outline";
 type ButtonSize = "sm" | "md" | "lg";
 
 interface BaseProps {
@@ -41,6 +41,8 @@ export function Button(props: ButtonProps) {
         primary: "bg-app-accent text-app-on-accent hover:bg-app-accent-600",
         secondary: "bg-app-bg text-app-ink hover:bg-app-bg/90 border border-app-accent",
         outline: "bg-transparent text-app-accent border border-app-accent hover:bg-app-accent/10",
+        danger: "bg-red-700 text-white hover:bg-red-800 focus:ring-2 focus:ring-red-700/40",
+        "danger-outline": "bg-transparent text-red-700 border border-red-700 hover:bg-red-700/10 focus:ring-2 focus:ring-red-700/40",
     };
 
     const classes = clsx(base, sizeClasses[size], variantClasses[variant], fullWidth && "w-full", className);

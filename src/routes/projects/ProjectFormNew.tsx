@@ -1,44 +1,41 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiCreateProject } from "@/modules/projects/api.vercel";
-import type { ProjectStatus } from "@/modules/projects/types";
-
-// Tipo del form allineato al DTO dell'API
-type CreateProjectPayload = {
-    title: string;
-    description: string | null;
-    start_date: string | null; // formato YYYY-MM-DD oppure null
-    end_date: string | null; // formato YYYY-MM-DD oppure null
-    progress: number; // 0..100
-    status: ProjectStatus; // "planned" | "active" | "paused" | "done" | "cancelled"
-};
+import type { Project } from "@/modules/projects/types";
+import { Button } from "@/components/ui/Button";
+import { InputField } from "@/components/ui/InputField";
+import { TextAreaField } from "@/components/ui/TextAreaField";
+import { SelectField } from "@/components/ui/SelectField";
 
 export function ProjectFormNew() {
     const nav = useNavigate();
 
-    const [form, setForm] = useState<CreateProjectPayload>({
+    const stateOptions = [
+        { label: "planned", value: "planned" },
+        { label: "active", value: "active" },
+        { label: "paused", value: "paused" },
+        { label: "completed", value: "completed" },
+        { label: "cancelled", value: "cancelled" },
+    ];
+
+    const [project, setProject] = useState<Project>({
+        id: "",
         title: "",
         description: "",
-        start_date: null,
+        start_date: "",
         end_date: null,
         progress: 0,
         status: "planned",
     });
-
     const [pending, setPending] = useState<boolean>(false);
     const [err, setErr] = useState<string | null>(null);
-
-    function onChange<K extends keyof CreateProjectPayload>(key: K, value: CreateProjectPayload[K]) {
-        setForm((prev) => ({ ...prev, [key]: value }));
-    }
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setPending(true);
         setErr(null);
         try {
-            //await createProject(form);
-            await apiCreateProject(form);
+            await apiCreateProject(project);
             nav("/projects");
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore salvataggio";
@@ -50,92 +47,82 @@ export function ProjectFormNew() {
 
     return (
         <div className="max-w-xl space-y-4">
-            <h1 className="text-2xl font-semibold">Nuovo progetto</h1>
+            <h1 className="text-2xl font-semibold">New project</h1>
 
             <form
                 onSubmit={onSubmit}
                 className="space-y-3">
                 <div>
-                    <label className="block text-sm font-medium">Titolo</label>
-                    <input
-                        className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                        value={form.title}
-                        onChange={(e) => onChange("title", e.target.value)}
-                        required
+                    <InputField
+                        label="Title"
+                        value={project.title}
+                        onChange={(e) => setProject({ ...project, title: e.target.value })}
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium">Descrizione</label>
-                    <textarea
-                        className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                    <TextAreaField
+                        label="Description"
                         rows={4}
-                        value={form.description ?? ""}
-                        onChange={(e) => onChange("description", e.target.value)}
+                        value={project.description ?? ""}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProject({ ...project, description: e.target.value })}
                     />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-sm font-medium">Inizio</label>
-                        <input
+                        <InputField
                             type="date"
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                            value={form.start_date ?? ""}
-                            onChange={(e) => onChange("start_date", e.target.value || null)}
+                            label="Start date"
+                            value={project.start_date ?? ""}
+                            onChange={(e) => setProject({ ...project, start_date: e.target.value })}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium">Fine</label>
-                        <input
+                        <InputField
                             type="date"
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                            value={form.end_date ?? ""}
-                            onChange={(e) => onChange("end_date", e.target.value || null)}
+                            label="End date"
+                            value={project.end_date ?? ""}
+                            onChange={(e) => setProject({ ...project, end_date: e.target.value })}
                         />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-sm font-medium">Stato</label>
-                        <select
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                            value={form.status}
-                            onChange={(e) => onChange("status", e.target.value as ProjectStatus)}>
-                            <option value="planned">planned</option>
-                            <option value="active">active</option>
-                            <option value="paused">paused</option>
-                            <option value="done">done</option>
-                            <option value="cancelled">cancelled</option>
-                        </select>
+                        <SelectField
+                            label="State"
+                            options={stateOptions}
+                            value={project.status}
+                            onChange={(e) => setProject({ ...project, status: e.target.value as Project["status"] })}
+                        />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium">Progresso</label>
-                        <input
+                        <InputField
                             type="number"
                             min={0}
                             max={100}
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                            value={form.progress ?? 0}
-                            onChange={(e) => onChange("progress", Number(e.target.value))}
+                            label="Progress"
+                            value={project.progress ?? ""}
+                            onChange={(e) => setProject({ ...project, progress: Number(e.target.value) })}
                         />
                     </div>
                 </div>
 
                 {err && <p className="text-red-600 text-sm">{err}</p>}
                 <div className="flex gap-2">
-                    <button
-                        disabled={pending}
-                        className="rounded px-3 py-2 ring-1">
-                        {pending ? "Salvo…" : "Salva"}
-                    </button>
-                    <button
+                    <Button
                         type="button"
+                        className="text-2xl font-semibold"
                         onClick={() => nav(-1)}
-                        className="rounded px-3 py-2 ring-1">
-                        Annulla
-                    </button>
+                        variant="outline">
+                        Cancel
+                    </Button>
+                    <Button
+                        disabled={pending}
+                        variant="primary">
+                        Save
+                    </Button>
                 </div>
             </form>
         </div>

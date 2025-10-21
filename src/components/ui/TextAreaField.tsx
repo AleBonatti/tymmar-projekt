@@ -8,7 +8,7 @@ export type TextAreaFieldProps = {
     className?: string;
 } & React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaFieldProps>(function TextAreaField({ label, error, fullWidth = true, className, rows = 4, ...props }, ref) {
+export const TextAreaField = React.forwardRef<HTMLTextAreaElement, TextAreaFieldProps>(function TextAreaField({ label, error, fullWidth = true, className, rows = 4, ...props }, ref) {
     const base = "rounded-md bg-white text-[#3A726A] placeholder-[#3A726A]/50 " + "focus:outline-none focus:ring-2 focus:ring-[#3A726A]/40 focus:bg-white/95 " + "transition-colors";
     const size = "px-3 py-2 text-base leading-relaxed";
 

@@ -8,9 +8,9 @@ export interface Project {
     end_date: string | null; // ISO date
     progress: number; // 0..100
     status: ProjectStatus;
-    created_by: string; // auth.users.id
-    created_at: string;
-    updated_at: string;
+    created_by?: string; // auth.users.id
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface ProjectMember {

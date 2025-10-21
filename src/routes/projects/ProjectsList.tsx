@@ -93,7 +93,7 @@ export function ProjectsList() {
                                 <td
                                     className="py-4 text-slate-500"
                                     colSpan={5}>
-                                    Nessun progetto
+                                    No projects found
                                 </td>
                             </tr>
                         )}

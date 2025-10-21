@@ -3,29 +3,29 @@ import { z } from "zod";
 // Helper YYYY-MM-DD
 const isoDate = z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida (formato YYYY-MM-DD)")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date (format YYYY-MM-DD)")
     .optional()
     .nullable();
 
 export const ProjectStatus = z.enum(["planned", "active", "paused", "done", "cancelled"]);
 
 export const CreateProjectSchema = z.object({
-    title: z.string().trim().min(3, "Titolo troppo corto (min 3)"),
-    description: z.string().trim().max(10000, "Descrizione troppo lunga").optional().nullable(),
+    title: z.string().trim().min(3, "Title too short (min 3)"),
+    description: z.string().trim().max(10000, "Description too long").optional().nullable(),
     start_date: isoDate,
     end_date: isoDate,
-    progress: z.number().int().min(0, "Progresso minimo 0").max(100, "Progresso massimo 100").optional(),
+    progress: z.number().int().min(0, "Min progress: 0").max(100, "Max progress: 100").optional(),
     status: ProjectStatus.default("planned"),
 });
 
 export type CreateProjectDTO = z.infer<typeof CreateProjectSchema>;
 
 export const UpdateProjectSchema = z.object({
-    title: z.string().trim().min(3, "Titolo troppo corto (min 3)").optional(),
-    description: z.string().trim().max(10000, "Descrizione troppo lunga").optional().nullable(),
+    title: z.string().trim().min(3, "Title too short (min 3)").optional(),
+    description: z.string().trim().max(10000, "Description too long").optional().nullable(),
     start_date: isoDate,
     end_date: isoDate,
-    progress: z.number().int().min(0, "Progresso minimo 0").max(100, "Progresso massimo 100").optional(),
+    progress: z.number().int().min(0, "Min progress: 0").max(100, "Max progress: 100").optional(),
     status: ProjectStatus.optional(),
 });
 

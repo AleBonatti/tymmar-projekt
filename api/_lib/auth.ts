@@ -21,9 +21,8 @@ export async function requireAuthAdmin(req: VercelRequest): Promise<AuthContext>
         throw new Error("Unauthorized: token non valido");
     }
 
-    const role = (data.user.user_metadata as Record<string, unknown>)?.role;
-    const isAdmin = role === "admin";
-    alert(role);
+    const is_admin = (data.user.app_metadata as Record<string, unknown>)?.is_admin;
+    const isAdmin = is_admin;
     if (!isAdmin) {
         throw new Error("Forbidden: solo amministratori");
     }
