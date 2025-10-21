@@ -1,36 +1,33 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createProfile } from "@/modules/profiles/api";
-import { useCurrentProfile } from "@/modules/auth/useCurrentProfile";
+//import { createProfile } from "@/modules/profiles/api";
+//import { useCurrentProfile } from "@/modules/auth/useCurrentProfile";
+import { apiCreateAccount } from "@/modules/accounts/api.vercel";
 
-type Role = "admin" | "user";
-
-type NewProfileInput = {
-    id: string; // UUID dell’utente in auth.users
-    email?: string;
-    username?: string;
-    full_name?: string;
-    role?: Role; // default "user" se non passato
+type CreateAccountPayload = {
+    email: string;
+    role: "admin" | "user";
+    full_name: string | null;
+    username: string | null;
+    send_invite: boolean;
 };
-
-type UIError = string | null;
 
 export function AccountFormNew() {
     const nav = useNavigate();
-    const { isAdmin } = useCurrentProfile();
+    //const { isAdmin } = useCurrentProfile();
 
-    const [form, setForm] = useState<Required<Pick<NewProfileInput, "id">> & Omit<NewProfileInput, "id">>({
-        id: "",
+    const [form, setForm] = useState<CreateAccountPayload>({
         email: "",
-        username: "",
-        full_name: "",
         role: "user",
+        full_name: "",
+        username: "",
+        send_invite: true,
     });
 
     const [pending, setPending] = useState(false);
-    const [err, setErr] = useState<UIError>(null);
+    const [err, setErr] = useState<string | null>(null);
 
-    if (!isAdmin) return <div className="text-red-600">Solo admin.</div>;
+    //if (!isAdmin) return <div className="text-red-600">Solo admin.</div>;
 
     function onChange<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
         setForm((prev) => ({ ...prev, [key]: value }));
@@ -42,17 +39,16 @@ export function AccountFormNew() {
         setErr(null);
 
         try {
-            const payload: NewProfileInput = {
-                id: form.id,
-                email: form.email || undefined,
-                username: form.username || undefined,
-                full_name: form.full_name || undefined,
-                role: form.role ?? "user",
-            };
-            await createProfile(payload);
+            await apiCreateAccount({
+                email: form.email,
+                role: form.role,
+                full_name: form.full_name || null,
+                username: form.username || null,
+                send_invite: form.send_invite,
+            });
             nav("/account");
         } catch (e) {
-            const message = e instanceof Error ? e.message : "Errore salvataggio";
+            const message = (e as { message?: string })?.message ?? "Errore salvataggio";
             setErr(message);
         } finally {
             setPending(false);
@@ -67,15 +63,6 @@ export function AccountFormNew() {
                 onSubmit={onSubmit}
                 className="space-y-3">
                 <div>
-                    <label className="block text-sm font-medium">User ID (UUID di auth.users)</label>
-                    <input
-                        className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                        value={form.id}
-                        onChange={(e) => onChange("id", e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
                     <label className="block text-sm font-medium">Email</label>
                     <input
                         className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
@@ -89,7 +76,7 @@ export function AccountFormNew() {
                         <label className="block text-sm font-medium">Username</label>
                         <input
                             className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                            value={form.username}
+                            value={form.username ?? ""}
                             onChange={(e) => onChange("username", e.target.value)}
                         />
                     </div>
@@ -97,7 +84,7 @@ export function AccountFormNew() {
                         <label className="block text-sm font-medium">Nome completo</label>
                         <input
                             className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
-                            value={form.full_name}
+                            value={form.full_name ?? ""}
                             onChange={(e) => onChange("full_name", e.target.value)}
                         />
                     </div>
@@ -107,7 +94,7 @@ export function AccountFormNew() {
                     <select
                         className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
                         value={form.role}
-                        onChange={(e) => onChange("role", e.target.value as Role)}>
+                        onChange={(e) => onChange("role", e.target.value as "admin" | "user")}>
                         <option value="user">user</option>
                         <option value="admin">admin</option>
                     </select>

@@ -6,7 +6,7 @@ export type AuthContextType = {
     session: Session | null;
     loading: boolean;
     signOut: () => Promise<void>;
-    role: string | null;
+    //role: null;
     isAdmin: boolean;
 };
 
@@ -16,7 +16,7 @@ export const AuthContext = createContext<AuthContextType>({
     session: null,
     loading: true,
     signOut: async () => {},
-    role: null,
+    //role: null,
     isAdmin: false,
 });
 

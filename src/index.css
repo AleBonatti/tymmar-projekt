@@ -1,2 +1,24 @@
-/* Tailwind CSS v4 */
+/* Token tema (Tailwind v4: CSS-first) */
 @import "tailwindcss";
+
+@theme {
+    /* Font */
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+
+    /* Colori principali */
+    --color-app-bg: #e4fde0; /* sfondo principale */
+    --color-app-ink: #252525; /* testo principale */
+    --color-app-accent: #3a726a; /* header/menu */
+    --color-app-on-accent: #ffffff; /* testo su accento */
+    --color-app-accent-600: color-mix(in oklab, var(--color-app-accent) 90%, black);
+    --color-app-accent-700: color-mix(in oklab, var(--color-app-accent) 80%, black);
+}
+
+/* Variante dark se/quando servirà (toggle con data-theme="dark" su <html>) */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@utility link-base {
+    @apply text-[#3A726A] font-medium underline-offset-4 decoration-1 
+         transition-colors cursor-pointer
+         hover:underline hover:text-[#2b5953];
+}

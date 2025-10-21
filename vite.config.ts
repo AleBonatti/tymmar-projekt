@@ -9,10 +9,4 @@ export default defineConfig({
     resolve: {
         alias: { "@": path.resolve(__dirname, "src") },
     },
-    server: {
-        proxy: {
-            // inoltra tutte le chiamate /api → http://localhost:3000
-            "/api": "http://localhost:3000",
-        },
-    },
 });

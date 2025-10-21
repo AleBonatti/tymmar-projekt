@@ -20,7 +20,7 @@ export function App() {
         <div className="min-h-dvh flex flex-col">
             <Header />
 
-            <main className="flex-1 mx-auto max-w-7xl w-full p-4">
+            <main className="flex-1 mx-auto max-w-7xl w-full p-4 bg-app-bg">
                 <Routes>
                     <Route
                         path="/"

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { listProjects } from "@/modules/projects/api";
+import { apiListProjects } from "@/modules/projects/api.vercel";
 import type { Project } from "@/modules/projects/types";
+import { Button } from "@/components/ui/Button";
+import { InputField } from "@/components/ui/InputField";
 
 export function ProjectsList() {
     const [items, setItems] = useState<Project[]>([]);
@@ -10,41 +12,46 @@ export function ProjectsList() {
     const [err, setErr] = useState<string | null>(null);
 
     useEffect(() => {
-        let mounted = true;
-        (async () => {
+        let cancelled = false;
+        const t = window.setTimeout(async () => {
             setLoading(true);
             setErr(null);
             try {
-                const data = await listProjects(q);
-                if (mounted) setItems(data);
+                // Tipizza il risultato come Project[]
+                const data = await apiListProjects(q);
+                if (!cancelled) setItems(data);
             } catch (e) {
                 const message = (e as { message?: string })?.message ?? "Errore caricamento";
-                if (mounted) setErr(message);
+                if (!cancelled) setErr(message);
             } finally {
-                if (mounted) setLoading(false);
+                if (!cancelled) setLoading(false);
             }
-        })();
+        }, 250); // piccolo debounce sulla ricerca
+
         return () => {
-            mounted = false;
+            cancelled = true;
+            window.clearTimeout(t);
         };
     }, [q]);
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold">Progetti</h1>
-                <Link
+            <div className="flex justify-between gap-2">
+                <h1 className="text-2xl font-semibold">Projects</h1>
+                <Button
+                    as="link"
                     to="/projects/new"
-                    className="ml-auto rounded px-3 py-2 ring-1">
-                    Nuovo progetto
-                </Link>
+                    className="text-2xl font-semibold"
+                    variant="primary">
+                    New project
+                </Button>
             </div>
 
-            <input
+            <InputField
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)}
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Cerca per titolo…"
-                className="px-3 py-2 ring-1 rounded bg-white"
+                fullWidth={false}
+                placeholder="Search projects…"
             />
 
             {loading && <div>Loading…</div>}
@@ -53,11 +60,11 @@ export function ProjectsList() {
             {!loading && !err && (
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="text-left border-b">
-                            <th className="py-2">Titolo</th>
-                            <th>Periodo</th>
-                            <th>Stato</th>
-                            <th>Progresso</th>
+                        <tr className="text-left border-b border-app-accent">
+                            <th className="py-2 pl-1">Project</th>
+                            <th>Period</th>
+                            <th>State</th>
+                            <th>Progress</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -65,18 +72,18 @@ export function ProjectsList() {
                         {items.map((p) => (
                             <tr
                                 key={p.id}
-                                className="border-b">
-                                <td className="py-2">{p.title}</td>
+                                className="border-b border-app-accent">
+                                <td className="py-2 pl-1">{p.title}</td>
                                 <td>
                                     {p.start_date ?? "—"} → {p.end_date ?? "—"}
                                 </td>
                                 <td className="uppercase">{p.status}</td>
                                 <td>{p.progress}%</td>
-                                <td className="text-right">
+                                <td className="text-right pr-1">
                                     <Link
                                         to={`/projects/${p.id}/edit`}
-                                        className="underline">
-                                        Modifica
+                                        className="link-base">
+                                        Edit
                                     </Link>
                                 </td>
                             </tr>

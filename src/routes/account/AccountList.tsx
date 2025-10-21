@@ -1,32 +1,35 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { listProfiles } from "@/modules/profiles/api";
-import { useCurrentProfile } from "@/modules/auth/useCurrentProfile";
+//import { listProfiles } from "@/modules/profiles/api";
+//import { useCurrentProfile } from "@/modules/auth/useCurrentProfile";
+import { apiListAccounts } from "@/modules/accounts/api.vercel";
+import type { Account } from "@/modules/accounts/api.vercel";
 
 export function AccountList() {
-    const [items, setItems] = useState<any[]>([]);
+    const [items, setItems] = useState<Account[]>([]);
     const [q, setQ] = useState("");
     const [loading, setLoading] = useState(true);
     const [err, setErr] = useState<string | null>(null);
-    const { isAdmin } = useCurrentProfile();
+    //const { isAdmin } = useCurrentProfile();
 
     useEffect(() => {
         let mounted = true;
-        async function run() {
+        const t = window.setTimeout(async () => {
             setLoading(true);
             setErr(null);
             try {
-                const data = await listProfiles(q || undefined);
+                const data = await apiListAccounts(q || undefined);
                 if (mounted) setItems(data);
-            } catch (e: any) {
-                if (mounted) setErr(e.message || "Errore caricamento");
+            } catch (e) {
+                const message = (e as { message?: string })?.message ?? "Errore caricamento";
+                if (mounted) setErr(message);
             } finally {
                 if (mounted) setLoading(false);
             }
-        }
-        run();
+        }, 250);
         return () => {
             mounted = false;
+            window.clearTimeout(t);
         };
     }, [q]);
 
@@ -34,13 +37,11 @@ export function AccountList() {
         <div className="space-y-4">
             <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-semibold">Gestione Account</h1>
-                {isAdmin && (
-                    <Link
-                        to="/account/new"
-                        className="ml-auto rounded px-3 py-2 ring-1">
-                        Aggiungi
-                    </Link>
-                )}
+                <Link
+                    to="/account/new"
+                    className="ml-auto rounded px-3 py-2 ring-1">
+                    Nuovo account
+                </Link>
             </div>
 
             <div className="flex gap-2">

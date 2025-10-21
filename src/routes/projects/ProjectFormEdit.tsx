@@ -1,7 +1,12 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getProject, updateProject, deleteProject, listProjectMembers, addProjectMember, removeProjectMember } from "@/modules/projects/api";
-import type { Project, UpdateProjectPatch, ProjectMember } from "@/modules/projects/types";
+import { Button } from "@/components/ui/Button";
+import { InputField } from "@/components/ui/InputField";
+import { TextArea } from "@/components/ui/TextArea";
+//import { getProject, updateProject, deleteProject, listProjectMembers, addProjectMember, removeProjectMember } from "@/modules/projects/api";
+
+import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
+import type { Project, ProjectStatus, ProjectMember } from "@/modules/projects/types";
 import { searchEligibleUsers, type EligibleUser } from "@/modules/projects/api.users";
 
 export function ProjectFormEdit() {
@@ -34,8 +39,8 @@ export function ProjectFormEdit() {
                 return;
             }
             try {
-                const p = await getProject(id);
-                const mem = await listProjectMembers(id);
+                const p = await apiGetProject(id);
+                const mem = await apiListMembers(id);
                 if (!mounted) return;
                 setProject(p);
                 setMembers(mem);
@@ -84,15 +89,22 @@ export function ProjectFormEdit() {
         setPending(true);
         setErr(null);
         try {
-            const patch: UpdateProjectPatch = {
+            /* const patch: UpdateProjectPatch = {
                 title: project.title,
                 description: project.description,
                 start_date: project.start_date,
                 end_date: project.end_date,
                 progress: project.progress,
                 status: project.status,
-            };
-            await updateProject(project.id, patch);
+            }; */
+            await apiUpdateProject(project.id, {
+                title: project.title,
+                description: project.description,
+                start_date: project.start_date,
+                end_date: project.end_date,
+                progress: project.progress,
+                status: project.status as ProjectStatus,
+            });
             nav("/projects");
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore salvataggio";
@@ -105,7 +117,7 @@ export function ProjectFormEdit() {
     async function handleAddMember(userId: string) {
         if (!project) return;
         try {
-            const m = await addProjectMember(project.id, userId);
+            const m = await apiAddMember(project.id, userId);
             setMembers((prev) => [m, ...prev]);
             setUserQuery("");
             setUserOptions([]);
@@ -124,7 +136,7 @@ export function ProjectFormEdit() {
         setDeleting(true);
         setDeleteErr(null);
         try {
-            await deleteProject(project.id);
+            await apiDeleteProject(project.id);
             nav("/projects");
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore eliminazione progetto";
@@ -136,7 +148,7 @@ export function ProjectFormEdit() {
     async function handleRemoveMember(userId: string) {
         if (!project) return;
         try {
-            await removeProjectMember(project.id, userId);
+            await apiRemoveMember(project.id, userId);
             setMembers((prev) => prev.filter((m) => m.user_id !== userId));
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore rimozione membro";
@@ -168,42 +180,50 @@ export function ProjectFormEdit() {
                 className="space-y-3">
                 {/* titolo */}
                 <div>
-                    <label className="block text-sm font-medium">Titolo</label>
-                    <input
-                        className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                    <InputField
+                        label="Title"
                         value={project.title}
                         onChange={(e) => setProject({ ...project, title: e.target.value })}
-                        required
                     />
                 </div>
 
                 {/* descrizione */}
                 <div>
-                    <label className="block text-sm font-medium">Descrizione</label>
-                    <textarea
-                        className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                    <TextArea
+                        label="Description"
+                        as="textarea"
                         rows={4}
                         value={project.description ?? ""}
-                        onChange={(e) => setProject({ ...project, description: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProject({ ...project, description: e.target.value })}
                     />
                 </div>
 
                 {/* date */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="block text-sm font-medium">Inizio</label>
+                        {/* <label className="block text-sm font-medium">Inizio</label>
                         <input
                             type="date"
                             className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
                             value={project.start_date ?? ""}
                             onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
+                        /> */}
+                        <InputField
+                            label="Date start"
+                            value={project.start_date ?? ""}
+                            onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium">Fine</label>
+                        {/* <label className="block text-sm font-medium">Fine</label>
                         <input
                             type="date"
                             className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                            value={project.end_date ?? ""}
+                            onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
+                        /> */}
+                        <InputField
+                            label="Date end"
                             value={project.end_date ?? ""}
                             onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
                         />
