@@ -22,7 +22,7 @@ export function ProjectFormNew() {
         id: "",
         title: "",
         description: "",
-        start_date: "",
+        start_date: null,
         end_date: null,
         progress: 0,
         status: "planned",

@@ -13,11 +13,11 @@ export interface Project {
     updated_at?: string;
 }
 
-export interface ProjectMember {
+/* export interface ProjectMember {
     project_id: string;
     user_id: string;
     added_at: string;
-}
+} */
 
 export interface CreateProjectInput {
     title: string;

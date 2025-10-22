@@ -1,30 +1,18 @@
-// api/employees/list.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { z } from "zod";
 import { requireAuthAdmin } from "../_lib/auth.js";
 import { sendError } from "../_lib/errors.js";
 
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import { pgTable, integer, text, timestamp } from "drizzle-orm/pg-core";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+
 import { desc, ilike } from "drizzle-orm";
+import { employees } from "../_lib/schema.js";
 
-/* ========== Schema Drizzle (minimale) ==========
-   Spostalo eventualmente in api/_lib/db/schema.ts
-   e importalo da lì per riuso. */
-export const employees = pgTable("employees", {
-    id: integer("id").primaryKey(),
-    name: text("name"),
-    surname: text("surname"),
-    email: text("email"),
-    createdAt: timestamp("created_at", { withTimezone: true }),
-});
-
-/* ========== Connessione DB (riusabile) ========== */
-const connectionString = process.env.SUPABASE_URL ?? process.env.POSTGRES_URL ?? "";
-
-const pool = connectionString ? new Pool({ connectionString }) : null;
-const db = pool ? drizzle(pool) : null;
+const connectionString = process.env.POSTGRES_URL ?? "";
+// Disable prefetch as it is not supported for "Transaction" pool mode
+export const client = postgres(connectionString, { prepare: false });
+export const db = drizzle(client);
 
 /* ========== Validazione querystring ========== */
 const QuerySchema = z.object({
@@ -62,18 +50,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
                   .where(ilike(employees.surname, `%${q}%`))
                   .orderBy(desc(employees.id))
             : db.select().from(employees).orderBy(desc(employees.id)));
-        /* let query = db.select().from(employees);
-
-        if (q.length > 0) {
-            query = query.where(ilike(employees.surname, `%${q}%`));
-        }
-
-        const rows = await query.orderBy(desc(employees.id)); */
 
         // 5) Risposta
         res.status(200).json({ members: rows ?? [] });
     } catch (e) {
-        console.log(e);
         const msg = (e as { message?: string })?.message ?? "Errore server";
         // Mappa errori più chiara (401 vs 403 vs 500)
         if (/Unauthorized/i.test(msg) || /token/i.test(msg)) {

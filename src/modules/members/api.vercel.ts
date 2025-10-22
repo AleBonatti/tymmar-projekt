@@ -1,5 +1,6 @@
 import { supabase } from "@/modules/supabase/client";
-import type { ProjectMember } from "@/modules/projects/types";
+//import type { ProjectMember } from "@/modules/projects/types";
+import type { Member } from "./types";
 
 export type Account = {
     id: string; // = auth.users.id
@@ -28,12 +29,12 @@ async function parseError(resp: Response): Promise<never> {
     throw new Error(t || "Errore server");
 }
 
-export async function apiListMembers(query: string): Promise<ProjectMember[]> {
+export async function apiListMembers(query: string): Promise<Member[]> {
     const token = await getToken();
     const resp = await fetch(`/api/members/list?q=${query}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (!resp.ok) return parseError(resp);
-    const data = (await resp.json()) as { members: ProjectMember[] };
+    const data = (await resp.json()) as { members: Member[] };
     return data.members ?? [];
 }

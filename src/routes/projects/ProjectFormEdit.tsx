@@ -6,10 +6,11 @@ import { SelectField } from "@/components/ui/SelectField";
 import { Button } from "@/components/ui/Button";
 
 import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListProjectMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
-import type { Project, ProjectStatus, ProjectMember } from "@/modules/projects/types";
+import type { Project, ProjectStatus } from "@/modules/projects/types";
 import type { Member } from "@/modules/members/types";
 //import { searchEligibleUsers, type EligibleUser } from "@/modules/projects/api.users";
 import { apiListMembers } from "@/modules/members/api.vercel";
+import { formatDate } from "@/lib/dates";
 
 export function ProjectFormEdit() {
     const nav = useNavigate();
@@ -28,7 +29,7 @@ export function ProjectFormEdit() {
     // Membri
     const [members, setMembers] = useState<Member[]>([]);
     const [userQuery, setUserQuery] = useState<string>("");
-    const [userOptions, setUserOptions] = useState<ProjectMember[]>([]);
+    const [userOptions, setUserOptions] = useState<Member[]>([]);
     const [searching, setSearching] = useState<boolean>(false);
     const [membersErr, setMembersErr] = useState<string | null>(null);
 
@@ -116,11 +117,12 @@ export function ProjectFormEdit() {
         }
     }
 
-    async function handleAddMember(userId: string) {
+    async function handleAddMember(user: Member) {
         if (!project) return;
         try {
-            const m = await apiAddMember(project.id, userId);
-            setMembers((prev) => [m, ...prev]);
+            await apiAddMember(project.id, user.id);
+            setMembers((prev) => [user, ...prev]);
+            //console.log(user, members);
             setUserQuery("");
             setUserOptions([]);
         } catch (e) {
@@ -151,7 +153,7 @@ export function ProjectFormEdit() {
         if (!project) return;
         try {
             await apiRemoveMember(project.id, userId);
-            setMembers((prev) => prev.filter((m) => m.user_id !== userId));
+            setMembers((prev) => prev.filter((m) => m.id !== userId));
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Error on removing employee";
             setMembersErr(message);
@@ -200,7 +202,7 @@ export function ProjectFormEdit() {
                         <InputField
                             type="date"
                             label="Date start"
-                            value={project.start_date ?? ""}
+                            value={project.start_date ? formatDate(project.start_date, { pattern: "yyyy-MM-dd" }) : ""}
                             onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
                         />
                     </div>
@@ -208,7 +210,7 @@ export function ProjectFormEdit() {
                         <InputField
                             type="date"
                             label="Date end"
-                            value={project.end_date ?? ""}
+                            value={project.end_date ? formatDate(project.end_date, { pattern: "yyyy-MM-dd" }) : ""}
                             onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
                         />
                     </div>
@@ -253,7 +255,7 @@ export function ProjectFormEdit() {
             {/* --- MEMBRI --- */}
             <section className="space-y-3">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-semibold">Membri</h2>
+                    <h2 className="text-lg font-semibold">Members</h2>
                 </div>
 
                 {/* ricerca e aggiunta */}
@@ -279,7 +281,7 @@ export function ProjectFormEdit() {
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => handleAddMember(u.id)}
+                                            onClick={() => handleAddMember(u)}
                                             className="rounded px-2 py-1 ring-1 text-sm">
                                             Add
                                         </button>
@@ -300,25 +302,20 @@ export function ProjectFormEdit() {
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="text-left border-b">
-                            <th className="py-2">User</th>
-                            <th>Email</th>
-                            <th>Added on</th>
+                            <th className="py-2 pl-1">User</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {members.map((m) => {
-                            const u = userOptions.find((x) => x.id === m.id);
                             return (
                                 <tr
                                     key={m.id}
                                     className="border-b">
-                                    <td className="py-2 font-medium">{`${u?.name} ${u?.surname}`}</td>
-                                    <td>{u?.id ?? "—"}</td>
-                                    <td>{new Date(m.added_at).toLocaleString()}</td>
+                                    <td className="py-2 pl-1 font-medium">{`${m.name} ${m.surname}`}</td>
                                     <td className="text-right">
                                         <Button
-                                            type="button"
+                                            variant="link"
                                             onClick={() => handleRemoveMember(m.id)}>
                                             Remove
                                         </Button>

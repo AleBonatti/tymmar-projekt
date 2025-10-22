@@ -4,6 +4,8 @@ import { apiListProjects } from "@/modules/projects/api.vercel";
 import type { Project } from "@/modules/projects/types";
 import { Button } from "@/components/ui/Button";
 import { InputField } from "@/components/ui/InputField";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { formatDate } from "@/lib/dates";
 
 export function ProjectsList() {
     const [items, setItems] = useState<Project[]>([]);
@@ -46,18 +48,29 @@ export function ProjectsList() {
                     New project
                 </Button>
             </div>
-
             <InputField
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)}
                 value={q}
                 fullWidth={false}
                 placeholder="Search projects…"
             />
-
-            {loading && <div>Loading…</div>}
-            {err && <div className="text-red-600 text-sm">{err}</div>}
-
-            {!loading && !err && (
+            {loading ? (
+                // 🦴 Skeleton Loader
+                <div className="space-y-2">
+                    {[...Array(5)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="flex items-center justify-between border-b py-2">
+                            <Skeleton className="h-4 w-1/4" />
+                            <Skeleton className="h-4 w-1/6" />
+                            <Skeleton className="h-4 w-1/12" />
+                            <Skeleton className="h-4 w-1/12" />
+                            <Skeleton className="h-4 w-10" />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                /* {err && <div className="text-red-600 text-sm">{err}</div>} */
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="text-left border-b border-app-accent">
@@ -75,7 +88,7 @@ export function ProjectsList() {
                                 className="border-b border-app-accent">
                                 <td className="py-2 pl-1">{p.title}</td>
                                 <td>
-                                    {p.start_date ?? "—"} → {p.end_date ?? "—"}
+                                    {formatDate(p.start_date)} → {formatDate(p.end_date)}
                                 </td>
                                 <td className="uppercase">{p.status}</td>
                                 <td>{p.progress}%</td>

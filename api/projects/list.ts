@@ -6,25 +6,19 @@ import { sendError } from "../_lib/errors.js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-//import { pgTable, integer, text, timestamp, numeric } from "drizzle-orm/pg-core";
-import { projects } from "../_lib/schema.js";
 import { desc, ilike } from "drizzle-orm";
+import { projects } from "../_lib/schema.js";
 
 const connectionString = process.env.POSTGRES_URL ?? "";
 // Disable prefetch as it is not supported for "Transaction" pool mode
 export const client = postgres(connectionString, { prepare: false });
 export const db = drizzle(client);
 
-/* =========================================
-   Validazione parametri query
-   ========================================= */
+/* ========== Validazione querystring ========== */
 const QuerySchema = z.object({
     q: z.string().trim().optional().default(""),
 });
 
-/* =========================================
-   Handler
-   ========================================= */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (req.method !== "GET") {
         res.setHeader("Allow", "GET");
