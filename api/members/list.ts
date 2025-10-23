@@ -6,7 +6,7 @@ import { sendError } from "../_lib/errors.js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import { desc, ilike } from "drizzle-orm";
+import { desc, ilike, or } from "drizzle-orm";
 import { employees } from "../_lib/schema.js";
 
 const connectionString = process.env.POSTGRES_URL ?? "";
@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             ? db
                   .select()
                   .from(employees)
-                  .where(ilike(employees.surname, `%${q}%`))
+                  .where(or(ilike(employees.surname, `%${q}%`), ilike(employees.name, `%${q}%`), ilike(employees.email, `%${q}%`)))
                   .orderBy(desc(employees.id))
             : db.select().from(employees).orderBy(desc(employees.id)));
 

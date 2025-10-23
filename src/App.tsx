@@ -13,7 +13,7 @@ import { ProjectFormEdit } from "@/routes/projects/ProjectFormEdit";
 
 export function App() {
     return (
-        <div className="min-h-dvh flex flex-col">
+        <div className="min-h-dvh flex flex-col bg-app-bg">
             <Header />
 
             <main className="flex-1 mx-auto max-w-7xl w-full p-4 bg-app-bg">

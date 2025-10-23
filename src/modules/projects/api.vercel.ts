@@ -51,7 +51,7 @@ export async function apiCreateProject(input: {
     start_date: string | null; // YYYY-MM-DD | null
     end_date: string | null; // YYYY-MM-DD | null
     progress: number; // 0..100
-    status: ProjectStatus; // "planned" | "active" | "paused" | "done" | "cancelled"
+    status: ProjectStatus; // "planned" | "active" | "paused" | "completed" | "cancelled"
 }): Promise<Project> {
     const token = await getToken();
     const resp = await fetch("/api/projects/create", {

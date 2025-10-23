@@ -4,11 +4,12 @@ import { pgTable, integer, text, timestamp, smallint, uuid } from "drizzle-orm/p
 //const id = integer("id").generatedAlwaysAsIdentity().primaryKey();
 
 /** Esempi — adatta ai tuoi */
-export const employees = pgTable("employees", {
+export const employees = pgTable("v_employees", {
     id: integer("id").primaryKey(),
     name: text("name"),
     surname: text("surname"),
-    //created_at: timestamp("created_at", { withTimezone: true }),
+    email: text("email"),
+    created_at: timestamp("created_at", { withTimezone: true }),
 });
 
 export const projects = pgTable("projects", {

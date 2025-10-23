@@ -4,6 +4,8 @@ import { supabase } from "@/modules/supabase/client";
 import { useAuth } from "@/modules/auth/AuthContext";
 import { Toast } from "@/components/Toast";
 import { ToastViewport } from "@/components/ToastViewport";
+import { InputField } from "@/components/ui/InputField";
+import { Button } from "@/components/ui/Button";
 
 interface LocationState {
     from?: { pathname: string };
@@ -75,9 +77,8 @@ export function Login() {
                     onSubmit={handleSignIn}
                     className="space-y-3">
                     <div>
-                        <label className="block text-sm font-medium">Email</label>
-                        <input
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                        <InputField
+                            label="Email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -86,9 +87,8 @@ export function Login() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium">Password</label>
-                        <input
-                            className="mt-1 w-full px-3 py-2 ring-1 rounded bg-white"
+                        <InputField
+                            label="Password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -97,11 +97,11 @@ export function Login() {
                         />
                     </div>
 
-                    <button
+                    <Button
                         disabled={pending}
-                        className="rounded px-3 py-2 ring-1 w-full">
-                        {pending ? "Accesso in corso…" : "Entra"}
-                    </button>
+                        fullWidth={true}>
+                        {pending ? "Logging in…" : "Login"}
+                    </Button>
 
                     <div className="text-right">
                         <Link

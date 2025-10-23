@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/Button";
 
 import { apiGetProject, apiUpdateProject, apiDeleteProject, apiListProjectMembers, apiAddMember, apiRemoveMember } from "@/modules/projects/api.vercel";
 import type { Project, ProjectStatus } from "@/modules/projects/types";
-import type { Member } from "@/modules/members/types";
+import { type Member, getFullname } from "@/modules/members/types";
 //import { searchEligibleUsers, type EligibleUser } from "@/modules/projects/api.users";
 import { apiListMembers } from "@/modules/members/api.vercel";
 import { formatDate } from "@/lib/dates";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+import { Autocomplete } from "@/components/ui/Autocomplete";
 
 export function ProjectFormEdit() {
     const nav = useNavigate();
@@ -28,9 +31,9 @@ export function ProjectFormEdit() {
 
     // Membri
     const [members, setMembers] = useState<Member[]>([]);
-    const [userQuery, setUserQuery] = useState<string>("");
-    const [userOptions, setUserOptions] = useState<Member[]>([]);
-    const [searching, setSearching] = useState<boolean>(false);
+    //const [userQuery, setUserQuery] = useState<string>("");
+    //const [userOptions, setUserOptions] = useState<Member[]>([]);
+    //const [searching, setSearching] = useState<boolean>(false);
     const [membersErr, setMembersErr] = useState<string | null>(null);
 
     const stateOptions = [
@@ -68,31 +71,7 @@ export function ProjectFormEdit() {
         };
     }, [id]);
 
-    useEffect(() => {
-        let cancelled = false;
-        async function run() {
-            setSearching(true);
-            setMembersErr(null);
-            try {
-                const opts = await apiListMembers(userQuery.trim());
-                if (!cancelled) setUserOptions(opts);
-            } catch (e) {
-                const message = (e as { message?: string })?.message ?? "Errore ricerca utenti";
-                if (!cancelled) setMembersErr(message);
-            } finally {
-                if (!cancelled) setSearching(false);
-            }
-        }
-        // debounce semplice
-        const t = window.setTimeout(run, 250);
-        return () => {
-            cancelled = true;
-            window.clearTimeout(t);
-        };
-    }, [userQuery]);
-
-    if (loading) return <div>Loading…</div>;
-    if (!project) return <div className="text-red-600">{err || "Project not found"}</div>;
+    //if (!project) return <div className="text-red-600">{err || "Project not found"}</div>;
 
     async function onSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -114,20 +93,6 @@ export function ProjectFormEdit() {
             setErr(message);
         } finally {
             setPending(false);
-        }
-    }
-
-    async function handleAddMember(user: Member) {
-        if (!project) return;
-        try {
-            await apiAddMember(project.id, user.id);
-            setMembers((prev) => [user, ...prev]);
-            //console.log(user, members);
-            setUserQuery("");
-            setUserOptions([]);
-        } catch (e) {
-            const message = (e as { message?: string })?.message ?? "Errore aggiunta membro";
-            setMembersErr(message);
         }
     }
 
@@ -160,8 +125,34 @@ export function ProjectFormEdit() {
         }
     }
 
+    // 🔎 Ricerca per Autocomplete (ritorna Member[])
+    async function searchMembers(q: string): Promise<Member[]> {
+        if (!q.trim()) return [];
+        try {
+            const list = await apiListMembers(q.trim());
+            // escludi già selezionati
+            const selectedIds = new Set(members.map((m) => m.id));
+            return list.filter((m) => !selectedIds.has(m.id));
+        } catch (e) {
+            const message = (e as { message?: string })?.message ?? "Errore ricerca utenti";
+            setMembersErr(message);
+            return [];
+        }
+    }
+
+    async function handleAddMember(user: Member) {
+        if (!project) return;
+        try {
+            await apiAddMember(project.id, user.id);
+            setMembers((prev) => [user, ...prev]);
+        } catch (e) {
+            const message = (e as { message?: string })?.message ?? "Errore aggiunta membro";
+            setMembersErr(message);
+        }
+    }
+
     return (
-        <div className="max-w-3xl space-y-8">
+        <div className="max-w-3xl space-y-8 mx-auto">
             <div className="flex items-start justify-between">
                 <h1 className="text-2xl font-semibold">Update project</h1>
 
@@ -178,163 +169,160 @@ export function ProjectFormEdit() {
                 </div>
             </div>
 
-            {/* --- FORM PROGETTO --- */}
-            <form
-                onSubmit={onSubmit}
-                className="space-y-3">
-                <div>
-                    <InputField
-                        label="Title"
-                        value={project.title}
-                        onChange={(e) => setProject({ ...project, title: e.target.value })}
-                    />
-                </div>
-                <div>
-                    <TextAreaField
-                        label="Description"
-                        rows={4}
-                        value={project.description ?? ""}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProject({ ...project, description: e.target.value })}
-                    />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <InputField
-                            type="date"
-                            label="Date start"
-                            value={project.start_date ? formatDate(project.start_date, { pattern: "yyyy-MM-dd" }) : ""}
-                            onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
+            {loading ? (
+                <ProjectFormSkeleton />
+            ) : (
+                <>
+                    <form
+                        onSubmit={onSubmit}
+                        className="space-y-3">
+                        <div>
+                            <InputField
+                                label="Title"
+                                value={project.title}
+                                onChange={(e) => setProject({ ...project, title: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <TextAreaField
+                                label="Description"
+                                rows={4}
+                                value={project.description ?? ""}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProject({ ...project, description: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <InputField
+                                    type="date"
+                                    label="Date start"
+                                    value={project.start_date ? formatDate(project.start_date, { pattern: "yyyy-MM-dd" }) : ""}
+                                    onChange={(e) => setProject({ ...project, start_date: e.target.value || null })}
+                                />
+                            </div>
+                            <div>
+                                <InputField
+                                    type="date"
+                                    label="Date end"
+                                    value={project.end_date ? formatDate(project.end_date, { pattern: "yyyy-MM-dd" }) : ""}
+                                    onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <SelectField
+                                    label="State"
+                                    options={stateOptions}
+                                    value={project.status}
+                                    onChange={(e) => setProject({ ...project, status: e.target.value as Project["status"] })}
+                                />
+                            </div>
+                            <div>
+                                <InputField
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    label="Progress"
+                                    value={project.progress}
+                                    onChange={(e) => setProject({ ...project, progress: Number(e.target.value) })}
+                                />
+                            </div>
+                        </div>
+
+                        {err && <p className="text-red-600 text-sm">{err}</p>}
+                        <div className="flex gap-2">
+                            <Button
+                                type="button"
+                                onClick={() => nav(-1)}
+                                variant="outline">
+                                Cancel
+                            </Button>
+                            <Button
+                                disabled={pending}
+                                variant="primary">
+                                {pending ? "Saving" : "Save"}
+                            </Button>
+                        </div>
+                    </form>
+
+                    <section className="space-y-3">
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-lg font-semibold">Members</h2>
+                        </div>
+
+                        {/* ricerca e aggiunta */}
+                        <Autocomplete
+                            label="Associate member"
+                            placeholder="Search member by name or email..."
+                            selected={members}
+                            onAdd={handleAddMember}
+                            onRemove={(id) => handleRemoveMember(id)}
+                            search={searchMembers}
+                            getId={(m) => m.id}
+                            getLabel={(m) => getFullname(m)}
+                            getDescription={(m) => m.email}
                         />
-                    </div>
-                    <div>
-                        <InputField
-                            type="date"
-                            label="Date end"
-                            value={project.end_date ? formatDate(project.end_date, { pattern: "yyyy-MM-dd" }) : ""}
-                            onChange={(e) => setProject({ ...project, end_date: e.target.value || null })}
-                        />
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <SelectField
-                            label="State"
-                            options={stateOptions}
-                            value={project.status}
-                            onChange={(e) => setProject({ ...project, status: e.target.value as Project["status"] })}
-                        />
-                    </div>
-                    <div>
-                        <InputField
-                            type="number"
-                            min={0}
-                            max={100}
-                            label="Progress"
-                            value={project.progress}
-                            onChange={(e) => setProject({ ...project, progress: Number(e.target.value) })}
-                        />
-                    </div>
-                </div>
+                        {membersErr && <p className="text-red-600 text-sm">{membersErr}</p>}
+                    </section>
+                </>
+            )}
+        </div>
+    );
+}
 
-                {err && <p className="text-red-600 text-sm">{err}</p>}
-                <div className="flex gap-2">
-                    <Button
-                        type="button"
-                        onClick={() => nav(-1)}
-                        variant="outline">
-                        Cancel
-                    </Button>
-                    <Button
-                        disabled={pending}
-                        variant="primary">
-                        {pending ? "Saving" : "Save"}
-                    </Button>
+function ProjectFormSkeleton() {
+    return (
+        <div className="max-w-xl space-y-6">
+            <div className="space-y-2">
+                <Skeleton className="h-6 w-48" /> {/* Titolo pagina */}
+                <Skeleton className="h-4 w-80" /> {/* sottotitolo opzionale */}
+            </div>
+
+            {/* Titolo */}
+            <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+
+            {/* Descrizione */}
+            <div className="space-y-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-24 w-full" />
+            </div>
+
+            {/* Date */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-10 w-full" />
                 </div>
-            </form>
-
-            {/* --- MEMBRI --- */}
-            <section className="space-y-3">
-                <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-semibold">Members</h2>
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-10 w-full" />
                 </div>
+            </div>
 
-                {/* ricerca e aggiunta */}
-                <div className="flex gap-2">
-                    <input
-                        className="w-full px-3 py-2 ring-1 rounded bg-white"
-                        placeholder="Cerca utente (email, username, nome)…"
-                        value={userQuery}
-                        onChange={(e) => setUserQuery(e.target.value)}
-                    />
-                    <div className="min-w-[12rem]">
-                        {searching ? (
-                            <div className="text-sm text-slate-500 px-2 py-2">Ricerca…</div>
-                        ) : userOptions.length > 0 ? (
-                            <ul className="border rounded bg-white max-h-48 overflow-auto">
-                                {userOptions.map((u) => (
-                                    <li
-                                        key={u.id}
-                                        className="flex items-center justify-between px-3 py-2">
-                                        <div className="text-sm">
-                                            <div className="font-medium">{`${u.name} ${u.surname}`}</div>
-                                            <div className="text-slate-500">#{u.id}</div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleAddMember(u)}
-                                            className="rounded px-2 py-1 ring-1 text-sm">
-                                            Add
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : userQuery.trim().length > 0 ? (
-                            <div className="text-sm text-slate-500 px-2 py-2">No user found</div>
-                        ) : (
-                            <div className="text-sm text-slate-500 px-2 py-2">Type to search…</div>
-                        )}
-                    </div>
+            {/* Stato / Progresso */}
+            <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-10 w-full" />
                 </div>
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+            </div>
 
-                {membersErr && <p className="text-red-600 text-sm">{membersErr}</p>}
-
-                {/* elenco membri */}
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="text-left border-b">
-                            <th className="py-2 pl-1">User</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {members.map((m) => {
-                            return (
-                                <tr
-                                    key={m.id}
-                                    className="border-b">
-                                    <td className="py-2 pl-1 font-medium">{`${m.name} ${m.surname}`}</td>
-                                    <td className="text-right">
-                                        <Button
-                                            variant="link"
-                                            onClick={() => handleRemoveMember(m.id)}>
-                                            Remove
-                                        </Button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        {members.length === 0 && (
-                            <tr>
-                                <td
-                                    className="py-4 text-slate-500"
-                                    colSpan={4}>
-                                    No users on this project
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </section>
+            {/* Bottoni */}
+            <div className="flex gap-2">
+                <Skeleton className="h-10 w-28" />
+                <Skeleton className="h-10 w-28" />
+                <div className="ml-auto">
+                    <Skeleton className="h-10 w-28" />
+                </div>
+            </div>
         </div>
     );
 }

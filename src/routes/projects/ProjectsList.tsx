@@ -70,48 +70,50 @@ export function ProjectsList() {
                     ))}
                 </div>
             ) : (
-                /* {err && <div className="text-red-600 text-sm">{err}</div>} */
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="text-left border-b border-app-accent">
-                            <th className="py-2 pl-1">Project</th>
-                            <th>Period</th>
-                            <th>State</th>
-                            <th>Progress</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {items.map((p) => (
-                            <tr
-                                key={p.id}
-                                className="border-b border-app-accent">
-                                <td className="py-2 pl-1">{p.title}</td>
-                                <td>
-                                    {formatDate(p.start_date)} → {formatDate(p.end_date)}
-                                </td>
-                                <td className="uppercase">{p.status}</td>
-                                <td>{p.progress}%</td>
-                                <td className="text-right pr-1">
-                                    <Link
-                                        to={`/projects/${p.id}/edit`}
-                                        className="link-base">
-                                        Edit
-                                    </Link>
-                                </td>
+                <>
+                    {err && <div className="text-red-600 text-sm">{err}</div>}
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="text-left border-b border-app-accent">
+                                <th className="py-2 pl-1">Project</th>
+                                <th>Period</th>
+                                <th>State</th>
+                                <th>Progress</th>
+                                <th></th>
                             </tr>
-                        ))}
-                        {items.length === 0 && (
-                            <tr>
-                                <td
-                                    className="py-4 text-slate-500"
-                                    colSpan={5}>
-                                    No projects found
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {items.map((p) => (
+                                <tr
+                                    key={p.id}
+                                    className="border-b border-app-accent">
+                                    <td className="py-2 pl-1">{p.title}</td>
+                                    <td>
+                                        {formatDate(p.start_date)} → {formatDate(p.end_date)}
+                                    </td>
+                                    <td className="uppercase">{p.status}</td>
+                                    <td>{p.progress}%</td>
+                                    <td className="text-right pr-1">
+                                        <Link
+                                            to={`/projects/${p.id}/edit`}
+                                            className="link-base">
+                                            Edit
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
+                            {items.length === 0 && (
+                                <tr>
+                                    <td
+                                        className="py-4 text-slate-500"
+                                        colSpan={5}>
+                                        No projects found
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </>
             )}
         </div>
     );

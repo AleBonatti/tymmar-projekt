@@ -5,7 +5,6 @@ import { sendError, parseZodError } from "../../_lib/errors.js";
 import { projects } from "../../_lib/schema.js";
 import { eq } from "drizzle-orm";
 import { UpdateProjectSchema } from "../schema.js";
-
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 

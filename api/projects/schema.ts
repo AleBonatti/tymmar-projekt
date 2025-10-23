@@ -16,7 +16,7 @@ const DateLike = z.union([z.date(), z.string().datetime(), z.string().regex(/^\d
     return new Date(v);
 });
 
-export const ProjectStatus = z.enum(["planned", "active", "paused", "done", "cancelled"]);
+export const ProjectStatus = z.enum(["planned", "active", "paused", "completed", "cancelled"]);
 
 export const CreateProjectSchema = z.object({
     title: z.string().trim().min(3, "Title too short (min 3)"),
