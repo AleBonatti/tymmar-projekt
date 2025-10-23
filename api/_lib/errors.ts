@@ -9,5 +9,5 @@ export function parseZodError(e: unknown): string {
         const z = e as { issues: Array<{ message: string }> };
         return z.issues.map((i) => i.message).join("; ");
     }
-    return "Payload non valido";
+    return "Invalid payload";
 }

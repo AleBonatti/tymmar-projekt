@@ -1,7 +1,21 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { z } from "zod";
 import { requireAuthAdmin } from "../../_lib/auth.js";
-import { getSupabaseRLS } from "../../_lib/supabase.js";
 import { sendError } from "../../_lib/errors.js";
+import { projects } from "../../_lib/schema.js";
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+
+const connectionString = process.env.POSTGRES_URL ?? "";
+// Disable prefetch as it is not supported for "Transaction" pool mode
+export const client = postgres(connectionString, { prepare: false });
+export const db = drizzle(client);
+
+// Se l'ID è numerico (int). Se usi UUID vedi la variante più sotto.
+const ParamsSchema = z.object({
+    id: z.coerce.number().int().positive("ID progetto non valido"),
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (req.method !== "DELETE") {
@@ -10,17 +24,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }
 
     try {
-        const { token } = await requireAuthAdmin(req);
-        const id = typeof req.query.id === "string" ? req.query.id : "";
-        if (!id) return sendError(res, 400, "ID progetto mancante");
+        // 1) Auth admin (se non ti serve il token, basta la verifica)
+        await requireAuthAdmin(req);
 
-        const supabase = getSupabaseRLS(token);
-        const { error } = await supabase.from("projects").delete().eq("id", id);
-        if (error) return sendError(res, 400, error.message);
+        // 2) Validazione parametri
+        const parsed = ParamsSchema.safeParse(req.query);
+        if (!parsed.success) {
+            const msg = parsed.error.issues[0]?.message ?? "Parametri non validi";
+            return sendError(res, 400, msg);
+        }
+        const { id } = parsed.data;
 
+        // 3) Delete con Drizzle
+        // Usiamo returning() per sapere se qualcosa è stato effettivamente cancellato
+        const deleted = await db.delete(projects).where(eq(projects.id, id)).returning();
+
+        if (deleted.length === 0) {
+            // Nessun record corrispondente
+            return sendError(res, 404, "Progetto non trovato");
+        }
+
+        // 4) OK - nessun body
         res.status(204).end();
     } catch (e) {
         const message = (e as { message?: string })?.message ?? "Errore server";
+        // mantengo la tua semantica originale sul 401 qui
         return sendError(res, 401, message);
     }
 }

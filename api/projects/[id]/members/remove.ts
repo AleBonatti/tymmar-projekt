@@ -1,8 +1,23 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireAuthAdmin } from "../../../_lib/auth";
-import { getSupabaseRLS } from "../../../_lib/supabase";
-import { sendError, parseZodError } from "../../../_lib/errors";
-import { MemberActionSchema } from "../../schema";
+import { requireAuthAdmin } from "../../../_lib/auth.js";
+import { sendError, parseZodError } from "../../../_lib/errors.js";
+import { employeeProjects } from "../../../_lib/schema.js";
+import { MemberActionSchema } from "../../schema.js";
+import { z } from "zod";
+import { eq, and } from "drizzle-orm";
+
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+
+const connectionString = process.env.POSTGRES_URL ?? "";
+// Disable prefetch as it is not supported for "Transaction" pool mode
+export const client = postgres(connectionString, { prepare: false });
+export const db = drizzle(client);
+
+// 🔸 Parametri da URL (es. /api/projects/[id]/members/add)
+const ParamsSchema = z.object({
+    id: z.coerce.number().int().positive("Invalid project ID"),
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
     if (req.method !== "POST") {
@@ -11,20 +26,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     }
 
     try {
-        const { token } = await requireAuthAdmin(req);
-        const id = typeof req.query.id === "string" ? req.query.id : "";
-        if (!id) return sendError(res, 400, "ID progetto mancante");
+        // 1️⃣ Verifica autenticazione e ruolo admin
+        await requireAuthAdmin(req);
 
+        // 2️⃣ Validazione ID progetto
+        const parsed = ParamsSchema.safeParse(req.query);
+        if (!parsed.success) {
+            return sendError(res, 400, parsed.error.issues[0]?.message ?? "Invalid ID");
+        }
+        const { id: project_id } = parsed.data;
+
+        // 3️⃣ Validazione body
         const body = MemberActionSchema.parse(req.body);
+        const { user_id } = body;
 
-        const supabase = getSupabaseRLS(token);
-        const { error } = await supabase.from("project_members").delete().eq("project_id", id).eq("user_id", body.user_id);
+        // 4️⃣ Inserimento nuovo membro
+        const [removed] = await db
+            .delete(employeeProjects)
+            .where(and(eq(employeeProjects.project_id, project_id), eq(employeeProjects.user_id, user_id)))
+            .returning();
 
-        if (error) return sendError(res, 400, error.message);
-        res.status(204).end();
+        // 6️⃣ Verifica risultato
+        if (!removed) {
+            return sendError(res, 500, "Errore creazione progetto");
+        }
+
+        // 7️⃣ OK
+        res.status(201).json({ project: removed });
     } catch (e) {
         const msg = parseZodError(e);
-        const text = msg === "Payload non valido" ? (e as { message?: string })?.message ?? msg : msg;
+        const text = msg === "Invalid payload" ? (e as { message?: string })?.message ?? msg : msg;
         return sendError(res, 400, text);
     }
 }

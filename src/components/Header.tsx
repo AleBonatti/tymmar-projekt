@@ -53,11 +53,6 @@ export function Header() {
                                 Dashboard
                             </NavLink>
                             <NavLink
-                                to="/account"
-                                className={linkStyle}>
-                                Accounts
-                            </NavLink>
-                            <NavLink
                                 to="/projects"
                                 className={linkStyle}>
                                 Projects
@@ -136,18 +131,10 @@ export function Header() {
                                 </li>
                                 <li>
                                     <NavLink
-                                        to="/account"
-                                        onClick={closeMenu}
-                                        className={linkStyle}>
-                                        Gestione Account
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink
                                         to="/projects"
                                         onClick={closeMenu}
                                         className={linkStyle}>
-                                        Gestione Progetti
+                                        Projects
                                     </NavLink>
                                 </li>
                                 <li>

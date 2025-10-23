@@ -7,17 +7,13 @@ import { Dashboard } from "@/routes/Dashboard";
 import { Protected } from "@/routes/Protected";
 import { ResetPassword } from "@/routes/ResetPassword";
 
-import { AccountList } from "@/routes/account/AccountList";
-import { AccountFormNew } from "@/routes/account/AccountFormNew";
-import { AccountFormEdit } from "@/routes/account/AccountFormEdit";
-
 import { ProjectsList } from "@/routes/projects/ProjectsList";
 import { ProjectFormNew } from "@/routes/projects/ProjectFormNew";
 import { ProjectFormEdit } from "@/routes/projects/ProjectFormEdit";
 
 export function App() {
     return (
-        <div className="min-h-dvh flex flex-col">
+        <div className="min-h-dvh flex flex-col bg-app-bg">
             <Header />
 
             <main className="flex-1 mx-auto max-w-7xl w-full p-4 bg-app-bg">
@@ -39,30 +35,6 @@ export function App() {
                         element={
                             <Protected>
                                 <Dashboard />
-                            </Protected>
-                        }
-                    />
-                    <Route
-                        path="/account"
-                        element={
-                            <Protected>
-                                <AccountList />
-                            </Protected>
-                        }
-                    />
-                    <Route
-                        path="/account/new"
-                        element={
-                            <Protected>
-                                <AccountFormNew />
-                            </Protected>
-                        }
-                    />
-                    <Route
-                        path="/account/:id/edit"
-                        element={
-                            <Protected>
-                                <AccountFormEdit />
                             </Protected>
                         }
                     />

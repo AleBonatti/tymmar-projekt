@@ -1,6 +1,7 @@
 import { supabase } from "../../modules/supabase/client";
 //import type { CreateProjectDTO, UpdateProjectDTO } from "../../../api/projects/schema";
-import type { Project, ProjectMember, ProjectStatus } from "@/modules/projects/types";
+import type { Project, ProjectStatus } from "@/modules/projects/types";
+import type { Member } from "../members/types";
 
 async function getToken(): Promise<string> {
     const { data } = await supabase.auth.getSession();
@@ -50,7 +51,7 @@ export async function apiCreateProject(input: {
     start_date: string | null; // YYYY-MM-DD | null
     end_date: string | null; // YYYY-MM-DD | null
     progress: number; // 0..100
-    status: ProjectStatus; // "planned" | "active" | "paused" | "done" | "cancelled"
+    status: ProjectStatus; // "planned" | "active" | "paused" | "completed" | "cancelled"
 }): Promise<Project> {
     const token = await getToken();
     const resp = await fetch("/api/projects/create", {
@@ -82,17 +83,17 @@ export async function apiDeleteProject(id: string): Promise<void> {
     if (!resp.ok) return parseError(resp);
 }
 
-export async function apiListMembers(projectId: string): Promise<ProjectMember[]> {
+export async function apiListProjectMembers(projectId: string): Promise<Member[]> {
     const token = await getToken();
     const resp = await fetch(`/api/projects/${projectId}/members/list`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (!resp.ok) return parseError(resp);
-    const data = (await resp.json()) as { members: ProjectMember[] };
+    const data = (await resp.json()) as { members: Member[] };
     return data.members ?? [];
 }
 
-export async function apiAddMember(projectId: string, userId: string): Promise<ProjectMember> {
+export async function apiAddMember(projectId: string, userId: string): Promise<Member> {
     const token = await getToken();
     const resp = await fetch(`/api/projects/${projectId}/members/add`, {
         method: "POST",
@@ -100,7 +101,7 @@ export async function apiAddMember(projectId: string, userId: string): Promise<P
         body: JSON.stringify({ user_id: userId }),
     });
     if (!resp.ok) return parseError(resp);
-    const data = (await resp.json()) as { member: ProjectMember };
+    const data = (await resp.json()) as { member: Member };
     return data.member;
 }
 
