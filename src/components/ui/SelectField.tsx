@@ -12,9 +12,10 @@ export interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectE
     options: SelectFieldOption[];
     fullWidth?: boolean;
     className?: string;
+    placeholderOption?: string;
 }
 
-export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(function SelectField({ label, error, options, fullWidth = true, className, ...props }, ref) {
+export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(function SelectField({ label, error, options, fullWidth = true, className, placeholderOption, ...props }, ref) {
     const base = "ring-1 ring-app-accent/30 rounded-md bg-white text-app-accent placeholder-app-accent/50 " + "focus:outline-none focus:ring-2 focus:ring-app-accent/40 focus:bg-white/95 " + "transition-colors appearance-none"; // appearance-none rimuove freccia di default su Safari
     const size = "px-3 py-2 text-base";
 
@@ -26,6 +27,8 @@ export const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>
                     ref={ref}
                     className={clsx(base, size, fullWidth ? "w-full" : "!w-fit", className)}
                     {...props}>
+                    {placeholderOption && <option value="">{placeholderOption}</option>}
+
                     {options.map((opt) => (
                         <option
                             key={opt.value}

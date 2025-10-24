@@ -153,7 +153,7 @@ export function Autocomplete<T>({ label, placeholder = "Cerca…", selected, onA
                     aria-autocomplete="list"
                     role="combobox"
                     className={clsx(
-                        "ring-1 ring-app-accent/30 w-full rounded-md bg-white text-app-accent placeholder-app-accent/50",
+                        "ring-1 ring-app-accent/30 rounded-md bg-white text-app-accent placeholder-app-accent/50",
                         "focus:outline-none focus:ring-2 focus:ring-app-accent/40",
                         "px-3 py-2 pr-8 transition-colors" // 👈 spazio per lo spinner
                     )}
