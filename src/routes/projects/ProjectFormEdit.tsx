@@ -254,7 +254,7 @@ export function ProjectFormEdit() {
                         {/* ricerca e aggiunta */}
                         <Autocomplete
                             label="Associate member"
-                            placeholder="Search member by name or email..."
+                            placeholder="Search member..."
                             selected={members}
                             onAdd={handleAddMember}
                             onRemove={(id) => handleRemoveMember(id)}
