@@ -14,6 +14,8 @@ import { formatDate } from "@/lib/dates";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 import { Autocomplete } from "@/components/ui/Autocomplete";
+import type { Customer } from "@/modules/customers/types";
+import { apiListCustomers } from "@/modules/customers/api.vercel";
 
 export function ProjectFormEdit() {
     const nav = useNavigate();
@@ -21,6 +23,7 @@ export function ProjectFormEdit() {
     const id: string | undefined = params.id;
 
     const [project, setProject] = useState<Project | null>(null);
+    const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [pending, setPending] = useState<boolean>(false);
     const [err, setErr] = useState<string | null>(null);
@@ -55,8 +58,10 @@ export function ProjectFormEdit() {
             try {
                 const p = await apiGetProject(id);
                 const mem = await apiListProjectMembers(id);
+                const customers = await apiListCustomers();
                 if (!mounted) return;
                 setProject(p);
+                setCustomers(customers);
                 setMembers(mem);
             } catch (e) {
                 const message = (e as { message?: string })?.message ?? "Errore caricamento";
@@ -80,6 +85,7 @@ export function ProjectFormEdit() {
         setErr(null);
         try {
             await apiUpdateProject(project.id, {
+                customer_id: project.customer_id,
                 title: project.title,
                 description: project.description,
                 start_date: project.start_date,
@@ -106,7 +112,7 @@ export function ProjectFormEdit() {
         setDeleteErr(null);
         try {
             await apiDeleteProject(project.id);
-            nav("/projects");
+            nav("/customers");
         } catch (e) {
             const message = (e as { message?: string })?.message ?? "Errore eliminazione progetto";
             setDeleteErr(message);
@@ -169,19 +175,38 @@ export function ProjectFormEdit() {
                 </div>
             </div>
 
-            {loading ? (
+            {loading || !project ? (
                 <ProjectFormSkeleton />
             ) : (
                 <>
                     <form
                         onSubmit={onSubmit}
                         className="space-y-3">
-                        <div>
-                            <InputField
-                                label="Title"
-                                value={project.title}
-                                onChange={(e) => setProject({ ...project, title: e.target.value })}
-                            />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <InputField
+                                    label="Title"
+                                    value={project.title}
+                                    onChange={(e) => setProject({ ...project, title: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <SelectField
+                                    label="Client"
+                                    options={customers.map((c) => ({ label: c.title, value: c.id }))}
+                                    value={project.customer_id === null ? "" : String(project.customer_id)}
+                                    /* onChange={(e) => setProject({ ...project, customer_id: e.target.value })} */
+                                    onChange={(e) =>
+                                        setProject((prev) => {
+                                            if (!prev) return prev; // prev è null → ritorno null
+                                            const v = e.target.value === "" ? null : Number(e.target.value);
+                                            // 🔴 importante: usa lo spread, NON ricostruire a mano l'oggetto
+                                            return { ...prev, customer_id: v };
+                                        })
+                                    }
+                                    placeholderOption="Select customer"
+                                />
+                            </div>
                         </div>
                         <div>
                             <TextAreaField

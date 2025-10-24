@@ -19,6 +19,7 @@ const DateLike = z.union([z.date(), z.string().datetime(), z.string().regex(/^\d
 export const ProjectStatus = z.enum(["planned", "active", "paused", "completed", "cancelled"]);
 
 export const CreateProjectSchema = z.object({
+    customer_id: z.number().int().positive("invalid user_id").nullable(),
     title: z.string().trim().min(3, "Title too short (min 3)"),
     description: z.string().trim().max(10000, "Description too long").optional().nullable(),
     start_date: DateLike.nullable().optional(),
@@ -30,6 +31,7 @@ export const CreateProjectSchema = z.object({
 export type CreateProjectDTO = z.infer<typeof CreateProjectSchema>;
 
 export const UpdateProjectSchema = z.object({
+    customer_id: z.number().int().positive("invalid user_id").nullable(),
     title: z.string().trim().min(3, "Title too short (min 3)").optional(),
     description: z.string().trim().max(10000, "Description too long").optional().nullable(),
     start_date: DateLike.nullable().optional(),

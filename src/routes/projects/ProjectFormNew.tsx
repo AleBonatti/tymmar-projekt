@@ -20,6 +20,7 @@ export function ProjectFormNew() {
 
     const [project, setProject] = useState<Project>({
         id: "",
+        customer_id: null,
         title: "",
         description: "",
         start_date: null,

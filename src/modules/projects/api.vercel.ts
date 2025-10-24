@@ -1,5 +1,4 @@
 import { supabase } from "../../modules/supabase/client";
-//import type { CreateProjectDTO, UpdateProjectDTO } from "../../../api/projects/schema";
 import type { Project, ProjectStatus } from "@/modules/projects/types";
 import type { Member } from "../members/types";
 

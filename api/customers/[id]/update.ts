@@ -2,9 +2,9 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { z } from "zod";
 import { requireAuthAdmin } from "../../_lib/auth.js";
 import { sendError, parseZodError } from "../../_lib/errors.js";
-import { projects } from "../../_lib/schema.js";
+import { customers } from "../../_lib/schema.js";
 import { eq } from "drizzle-orm";
-import { UpdateProjectSchema } from "../schema.js";
+import { UpdateCustomerSchema } from "../schema.js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -19,24 +19,13 @@ const ParamsSchema = z.object({
 });
 
 /** Helper: crea un oggetto “set” solo con i campi definiti e mappa i nomi corretti */
-function buildPatch(patch: z.infer<typeof UpdateProjectSchema>) {
+function buildPatch(patch: z.infer<typeof UpdateCustomerSchema>) {
     // Mapping: dal payload (snake_case) alle colonne drizzle
     // ATTENZIONE ai tipi: se arrivano stringhe ISO, converto a Date
     const set: Record<string, unknown> = {};
 
-    if (patch.customer_id !== undefined) set.customer_id = patch.customer_id;
     if (patch.title !== undefined) set.title = patch.title;
     if (patch.description !== undefined) set.description = patch.description ?? null;
-
-    if (patch.start_date !== undefined) {
-        set.start_date = patch.start_date ? new Date(patch.start_date) : null;
-    }
-    if (patch.end_date !== undefined) {
-        set.end_date = patch.end_date ? new Date(patch.end_date) : null;
-    }
-
-    if (patch.progress !== undefined) set.progress = patch.progress;
-    if (patch.status !== undefined) set.status = patch.status;
 
     // se hai campi come updated_at nel DB con default via trigger puoi ometterli
     return set;
@@ -61,12 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         const { id } = parsedParams.data;
 
         // 3) Parse body (Zod)
-        const patch = UpdateProjectSchema.parse(req.body);
-
-        // 4) Validazione logica date (se entrambe presenti nel payload)
-        if (patch.start_date && patch.end_date && patch.start_date > patch.end_date) {
-            return sendError(res, 400, "La data di inizio non può essere successiva alla data di fine");
-        }
+        const patch = UpdateCustomerSchema.parse(req.body);
 
         // 5) Costruisci SET coerente con schema
         const set = buildPatch(patch);
@@ -75,14 +59,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         }
 
         // 6) Update con returning
-        const [updated] = await db.update(projects).set(set).where(eq(projects.id, id)).returning();
+        const [updated] = await db.update(customers).set(set).where(eq(customers.id, id)).returning();
 
         if (!updated) {
-            return sendError(res, 404, "Progetto non trovato");
+            return sendError(res, 404, "Customer not found");
         }
 
         // 7) OK
-        res.status(200).json({ project: updated });
+        res.status(200).json({ customer: updated });
     } catch (e) {
         const msg = parseZodError(e);
         const text = msg === "Invalid payload" ? (e as { message?: string })?.message ?? msg : msg;

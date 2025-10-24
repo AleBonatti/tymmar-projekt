@@ -53,6 +53,11 @@ export function Header() {
                                 Dashboard
                             </NavLink>
                             <NavLink
+                                to="/customers"
+                                className={linkStyle}>
+                                Customers
+                            </NavLink>
+                            <NavLink
                                 to="/projects"
                                 className={linkStyle}>
                                 Projects
@@ -127,6 +132,14 @@ export function Header() {
                                         onClick={closeMenu}
                                         className={linkStyle}>
                                         Dashboard
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink
+                                        to="/customers"
+                                        onClick={closeMenu}
+                                        className={linkStyle}>
+                                        Customers
                                     </NavLink>
                                 </li>
                                 <li>

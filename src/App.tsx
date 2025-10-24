@@ -11,6 +11,10 @@ import { ProjectsList } from "@/routes/projects/ProjectsList";
 import { ProjectFormNew } from "@/routes/projects/ProjectFormNew";
 import { ProjectFormEdit } from "@/routes/projects/ProjectFormEdit";
 
+import { CustomersList } from "@/routes/customers/CustomersList";
+import { CustomerFormNew } from "@/routes/customers/CustomerFormNew";
+import { CustomerFormEdit } from "@/routes/customers/CustomerFormEdit";
+
 export function App() {
     return (
         <div className="min-h-dvh flex flex-col bg-app-bg">
@@ -59,6 +63,30 @@ export function App() {
                         element={
                             <Protected>
                                 <ProjectFormEdit />
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/customers"
+                        element={
+                            <Protected>
+                                <CustomersList />
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/customers/new"
+                        element={
+                            <Protected>
+                                <CustomerFormNew />
+                            </Protected>
+                        }
+                    />
+                    <Route
+                        path="/customers/:id/edit"
+                        element={
+                            <Protected>
+                                <CustomerFormEdit />
                             </Protected>
                         }
                     />

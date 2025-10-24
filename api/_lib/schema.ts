@@ -1,9 +1,14 @@
 // api/_lib/schema.ts
 import { pgTable, integer, text, timestamp, smallint, uuid } from "drizzle-orm/pg-core";
 
-//const id = integer("id").generatedAlwaysAsIdentity().primaryKey();
+export const customers = pgTable("customers", {
+    id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    created_by: uuid("created_by"),
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
 
-/** Esempi — adatta ai tuoi */
 export const employees = pgTable("v_employees", {
     id: integer("id").primaryKey(),
     name: text("name"),
@@ -15,6 +20,7 @@ export const employees = pgTable("v_employees", {
 export const projects = pgTable("projects", {
     //id: integer("id").primaryKey(), // o uuid("id").primaryKey()
     id: integer("id").generatedAlwaysAsIdentity().primaryKey(),
+    customer_id: integer("customer_id"),
     title: text("title").notNull(),
     description: text("description"),
     start_date: timestamp("start_date", { withTimezone: true }),
