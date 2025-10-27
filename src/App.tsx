@@ -6,6 +6,7 @@ import { Login } from "@/routes/Login";
 import { Dashboard } from "@/routes/Dashboard";
 import { Protected } from "@/routes/Protected";
 import { ResetPassword } from "@/routes/ResetPassword";
+import { lazy } from "react";
 
 import { ProjectsList } from "@/routes/projects/ProjectsList";
 import { ProjectFormNew } from "@/routes/projects/ProjectFormNew";
@@ -14,6 +15,13 @@ import { ProjectFormEdit } from "@/routes/projects/ProjectFormEdit";
 import { CustomersList } from "@/routes/customers/CustomersList";
 import { CustomerFormNew } from "@/routes/customers/CustomerFormNew";
 import { CustomerFormEdit } from "@/routes/customers/CustomerFormEdit";
+
+// Lazy pages
+const ProjectLayout = lazy(() => import("@/routes/projects/ProjectLayout"));
+//const ProjectTasksBoard = lazy(() => import("@/routes/projects/ProjectTasksBoard"));
+const ProjectTasksList = lazy(() => import("@/routes/projects/ProjectTasksList"));
+const ProjectMilestones = lazy(() => import("@/routes/projects/ProjectMilestones"));
+const ProjectReports = lazy(() => import("@/routes/projects/ProjectReports"));
 
 export function App() {
     return (
@@ -43,30 +51,6 @@ export function App() {
                         }
                     />
                     <Route
-                        path="/projects"
-                        element={
-                            <Protected>
-                                <ProjectsList />
-                            </Protected>
-                        }
-                    />
-                    <Route
-                        path="/projects/new"
-                        element={
-                            <Protected>
-                                <ProjectFormNew />
-                            </Protected>
-                        }
-                    />
-                    <Route
-                        path="/projects/:id/edit"
-                        element={
-                            <Protected>
-                                <ProjectFormEdit />
-                            </Protected>
-                        }
-                    />
-                    <Route
                         path="/customers"
                         element={
                             <Protected>
@@ -90,6 +74,65 @@ export function App() {
                             </Protected>
                         }
                     />
+                    <Route path="/projects">
+                        <Route
+                            index
+                            element={
+                                <Protected>
+                                    <ProjectsList />
+                                </Protected>
+                            }
+                        />
+                        <Route
+                            path="new"
+                            element={
+                                <Protected>
+                                    <ProjectFormNew />
+                                </Protected>
+                            }
+                        />
+                        {/* redirect default a tasks board */}
+                        <Route
+                            path=":id/edit"
+                            element={<ProjectLayout />}>
+                            <Route
+                                index
+                                element={
+                                    <Protected>
+                                        <ProjectFormEdit />
+                                    </Protected>
+                                }
+                            />
+                            <Route
+                                path="tasks"
+                                element={
+                                    <Protected>
+                                        <ProjectTasksList />
+                                    </Protected>
+                                }
+                            />
+                            {/* <Route
+                                path="tasks/list"
+                                element={<ProjectTasksBoard />}
+                            /> */}
+                            <Route
+                                path="milestones"
+                                element={
+                                    <Protected>
+                                        <ProjectMilestones />
+                                    </Protected>
+                                }
+                            />
+                            <Route
+                                path="reports"
+                                element={
+                                    <Protected>
+                                        <ProjectReports />
+                                    </Protected>
+                                }
+                            />{" "}
+                        </Route>
+                    </Route>
                 </Routes>
             </main>
 

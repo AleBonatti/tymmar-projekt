@@ -7,7 +7,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
     //const role = session?.user?.app_metadata?.is_admin ?? null;
-    //console.log(session?.user);
     const isAdmin = session?.user?.app_metadata?.is_admin;
 
     useEffect(() => {

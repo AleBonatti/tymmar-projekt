@@ -1,6 +1,6 @@
 // src/api/_lib/schema.tasks.ts
 import { pgTable, integer, varchar, text, timestamp, pgEnum, boolean, serial, index, uuid } from "drizzle-orm/pg-core";
-import { projects, employees } from "./schema"; // importa le tue tabelle esistenti
+import { projects, employees } from "./schema.js"; // importa le tue tabelle esistenti
 //import { relations } from "drizzle-orm";
 
 export const taskStatusEnum = pgEnum("task_status", ["todo", "in_progress", "blocked", "done"]);

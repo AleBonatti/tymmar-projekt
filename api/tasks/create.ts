@@ -1,9 +1,9 @@
 // api/tasks/create.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireAuthAdmin } from "../_lib/auth";
-import { sendError, parseZodError } from "../_lib/errors";
-import { tasks } from "../_lib/schema.tasks";
-import { CreateTaskSchema } from "./schema";
+import { requireAuthAdmin } from "../_lib/auth.js";
+import { sendError, parseZodError } from "../_lib/errors.js";
+import { tasks } from "../_lib/schema.tasks.js";
+import { CreateTaskSchema } from "./schema.js";
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -16,7 +16,7 @@ export const db = drizzle(client);
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== "POST") {
         res.setHeader("Allow", "POST");
-        return sendError(res, 405, "Metodo non consentito");
+        return sendError(res, 405, "Method not allowed");
     }
     try {
         await requireAuthAdmin(req);

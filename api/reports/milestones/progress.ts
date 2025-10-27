@@ -4,7 +4,7 @@ import { requireAuthAdmin } from "../../_lib/auth";
 import { sendError } from "../../_lib/errors";
 
 import { milestones, tasks } from "../../_lib/schema.tasks";
-import { eq, sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -24,19 +24,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!project_id) return sendError(res, 400, "project_id mancante");
 
     // progress = done / total per milestone
-    const rows = await db.execute<{ milestone_id: number; title: string; total: number; done: number }>(sql`
-    select m.id as milestone_id, m.title,
-           count(t.id)::int as total,
-           count(*) filter (where t.status = 'done')::int as done
-    from ${milestones} m
-    left join ${tasks} t on t.milestone_id = m.id and t.is_archived = false
-    where m.project_id = ${project_id}
-    group by m.id, m.title
-    order by m.start_date nulls last, m.id desc
-  `);
+    const rows = await db
+        .select({
+            milestone_id: milestones.id,
+            title: milestones.title,
+            total: sql<number>`count(${tasks.id})::int`,
+            done: sql<number>`count(*) filter (where ${tasks.status} = 'done')::int`,
+        })
+        .from(milestones)
+        .leftJoin(tasks, eq(tasks.milestone_id, milestones.id))
+        .where(eq(milestones.project_id, project_id))
+        .groupBy(milestones.id, milestones.title)
+        .orderBy(milestones.start_date);
 
     res.status(200).json({
-        items: rows.rows.map((r) => ({
+        items: rows.map((r) => ({
             milestone_id: r.milestone_id,
             title: r.title,
             total: r.total,

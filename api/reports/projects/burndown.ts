@@ -41,5 +41,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     order by d.day asc
   `);
 
-    res.status(200).json({ points: rows.rows });
+    res.status(200).json({ points: rows });
 }

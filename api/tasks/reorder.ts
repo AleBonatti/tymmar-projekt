@@ -1,10 +1,9 @@
 // api/tasks/reorder.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireAuthAdmin } from "../_lib/auth";
-import { sendError, parseZodError } from "../_lib/errors";
-
-import { tasks } from "../_lib/schema.tasks";
-import { ReorderTaskSchema } from "./schema";
+import { requireAuthAdmin } from "../_lib/auth.js";
+import { sendError, parseZodError } from "../_lib/errors.js";
+import { tasks } from "../_lib/schema.tasks.js";
+import { ReorderTaskSchema } from "./schema.js";
 import { eq } from "drizzle-orm";
 
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -28,8 +27,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             order_index: body.order_index,
             ...(body.status && { status: body.status }),
         };
+
         const [updated] = await db.update(tasks).set(set).where(eq(tasks.id, body.id)).returning();
         if (!updated) return sendError(res, 404, "Task non trovato");
+
         res.status(200).json({ task: updated });
     } catch (e) {
         return sendError(res, 400, parseZodError(e));
