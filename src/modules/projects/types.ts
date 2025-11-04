@@ -1,4 +1,4 @@
-export type ProjectStatus = "planned" | "active" | "paused" | "" | "cancelled";
+export type ProjectStatus = "planned" | "active" | "paused" | "completed" | "cancelled";
 
 export interface Project {
     id: string;
@@ -12,4 +12,14 @@ export interface Project {
     created_by?: string; // auth.users.id
     created_at?: string;
     updated_at?: string;
+}
+
+export interface CreateProjectInput {
+    customer_id: number | null;
+    title: string;
+    description: string | null;
+    start_date: string | null;
+    end_date: string | null;
+    progress: number;
+    status: ProjectStatus;
 }
